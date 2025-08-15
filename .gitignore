@@ -1,0 +1,4 @@
+.vscode
+.idea
+config.json
+main.go
