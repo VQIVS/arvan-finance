@@ -10,6 +10,7 @@ import (
 var (
 	ErrTransactionOnCreate = errors.New("error on creating new transaction")
 	ErrTransactionNotFound = errors.New("transaction not found")
+	ErrInvalidFilter       = errors.New("invalid filter provided for transaction retrieval")
 )
 
 type service struct {
@@ -30,15 +31,19 @@ func (s *service) CreateTransaction(ctx context.Context, transaction *domain.Tra
 	return transaction, nil
 
 }
-func (s *service) GetByTransactionByFilter(ctx context.Context, filter domain.TransactionFilter) (*domain.Transaction, error) {
-	transaction, err := s.repo.GetByFilter(ctx, filter)
+func (s *service) GetTransactionsByFilter(ctx context.Context, filter *domain.TransactionFilter) ([]*domain.Transaction, error) {
+	if filter == nil {
+		return nil, ErrInvalidFilter
+	}
+
+	transactions, err := s.repo.GetByFilter(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
 
-	if transaction == nil {
+	if len(transactions) == 0 {
 		return nil, ErrTransactionNotFound
 	}
 
-	return transaction, nil
+	return transactions, nil
 }

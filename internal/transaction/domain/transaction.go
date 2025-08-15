@@ -1,6 +1,10 @@
 package domain
 
-import "google.golang.org/genproto/googleapis/type/decimal"
+import (
+	"time"
+
+	"google.golang.org/genproto/googleapis/type/decimal"
+)
 
 type (
 	TransactionType string
@@ -21,12 +25,15 @@ type Transaction struct {
 	Type          TransactionType
 	ReferenceID   string
 	TransactionAt string
-	CreatedAt     string
+	CreatedAt     time.Time
 }
 
 type TransactionFilter struct {
-	ID          TransactionID
-	Type        TransactionType
-	ReferenceID ReferenceID
-	UserID      UserID
+	UserID      *uint
+	Type        *TransactionType
+	ReferenceID *string
+	FromDate    *time.Time
+	ToDate      *time.Time
+	Limit       int
+	Offset      int
 }
