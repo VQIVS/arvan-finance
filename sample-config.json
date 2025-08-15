@@ -5,5 +5,6 @@
         "database": "",
         "user": "",
         "password": ""
-    }
+    },
+    "sms_fee": 0.05
 }
