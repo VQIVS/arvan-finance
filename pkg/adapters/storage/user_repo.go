@@ -22,36 +22,36 @@ func NewUserRepo(db *gorm.DB) port.Repo {
 
 func (r *userRepo) Create(ctx context.Context, user domain.User) (domain.APIKey, error) {
 	u := mapper.UserDoamin2Storage(user)
-	return domain.APIKey(u.APIKey), r.db.Table("user").WithContext(ctx).Create(u).Error
+	return domain.APIKey(u.APIKey), r.db.WithContext(ctx).Create(u).Error
 }
 
 func (r *userRepo) GetByID(ctx context.Context, ID uint) (domain.User, error) {
 	var user types.User
-	if err := r.db.Table("user").WithContext(ctx).Where("id = ?", ID).First(&user).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("id = ?", ID).First(&user).Error; err != nil {
 		return domain.User{}, err
 	}
 	return *mapper.UserStorage2Domain(&user), nil
 }
 
-func (r *userRepo) CreditBalance(ctx context.Context, ID uint, amount int64) (domain.User, error) {
+func (r *userRepo) CreditBalance(ctx context.Context, ID uint, amount float64) (domain.User, error) {
 	var user types.User
-	if err := r.db.Table("user").WithContext(ctx).Where("id = ?", ID).First(&user).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("id = ?", ID).First(&user).Error; err != nil {
 		return domain.User{}, err
 	}
 	user.Balance += float64(amount)
-	if err := r.db.Table("user").WithContext(ctx).Save(&user).Error; err != nil {
+	if err := r.db.WithContext(ctx).Save(&user).Error; err != nil {
 		return domain.User{}, err
 	}
 	return *mapper.UserStorage2Domain(&user), nil
 }
 
-func (r *userRepo) DebitBalance(ctx context.Context, ID uint, amount int64) (domain.User, error) {
+func (r *userRepo) DebitBalance(ctx context.Context, ID uint, amount float64) (domain.User, error) {
 	var user types.User
-	if err := r.db.Table("user").WithContext(ctx).Where("id = ?", ID).First(&user).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("id = ?", ID).First(&user).Error; err != nil {
 		return domain.User{}, err
 	}
 	user.Balance -= float64(amount)
-	if err := r.db.Table("user").WithContext(ctx).Save(&user).Error; err != nil {
+	if err := r.db.WithContext(ctx).Save(&user).Error; err != nil {
 		return domain.User{}, err
 	}
 	return *mapper.UserStorage2Domain(&user), nil

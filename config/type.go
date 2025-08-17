@@ -1,12 +1,10 @@
 package config
 
-import "google.golang.org/genproto/googleapis/type/decimal"
-
 type Config struct {
-	DB     DBConfig        `json:"db"`
-	Server ServerConfig    `json:"server"`
-	Redis  RedisConfig     `json:"redis"`
-	SmsFee decimal.Decimal `json:"sms_fee"`
+	DB     DBConfig     `json:"db"`
+	Server ServerConfig `json:"server"`
+	Redis  RedisConfig  `json:"redis"`
+	SmsFee float64      `json:"sms_fee"`
 }
 
 type DBConfig struct {

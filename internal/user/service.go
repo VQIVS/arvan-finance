@@ -26,7 +26,7 @@ func NewService(repo port.Repo) port.Service {
 func (s *service) CreateUser(ctx context.Context, user domain.User) (domain.APIKey, error) {
 	apiKey, err := s.repo.Create(ctx, user)
 	if err != nil {
-		return "", ErrUserOnCreate
+		return "", err
 	}
 	return apiKey, nil
 }
@@ -39,14 +39,14 @@ func (s *service) GetUserByID(ctx context.Context, ID domain.UserID) (domain.Use
 	return user, nil
 }
 
-func (s *service) CreditUserBalance(ctx context.Context, ID domain.UserID, amount int64) error {
+func (s *service) CreditUserBalance(ctx context.Context, ID domain.UserID, amount float64) error {
 	_, err := s.repo.CreditBalance(ctx, uint(ID), amount)
 	if err != nil {
 		return ErrUserNotFound
 	}
 	return nil
 }
-func (s *service) DebitUserBalance(ctx context.Context, ID domain.UserID, amount int64) error {
+func (s *service) ProcessDebitEvent(ctx context.Context, ID domain.UserID, amount float64) error {
 	user, err := s.repo.DebitBalance(ctx, uint(ID), amount)
 	if err != nil {
 		return ErrUserNotFound
