@@ -1,10 +1,16 @@
 {
     "db": {
-        "host": "",
-        "port": 8080,
-        "database": "",
-        "user": "",
-        "password": ""
+        "host": "localhost",
+        "port": 5432,
+        "database": "finance",
+        "user": "postgres",
+        "password": "changeme"
     },
-    "sms_fee": 0.05
+    "sms_fee": 0.05,
+    "server": {
+        "httpPort": 8081
+    },
+    "rabbit": {
+        "url": "amqp://guest:guest@localhost:5672/"
+    }
 }
