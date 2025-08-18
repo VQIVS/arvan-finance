@@ -19,14 +19,20 @@ func (h *Handler) Start(ctx context.Context) error {
 		logger.NewLogger().Info("no rabbit configured, consumer won't start")
 		return nil
 	}
+	svc := h.app.UserService(context.Background())
+	if err := h.app.Rabbit().Consume("sms.user.balance.update", func(b []byte) error {
+		sms, err := svc.DebitUserBalance(context.Background(), b)
+		svc.UpdateSMSStatus(context.Background(), sms)
+		if err != nil {
+			logger.NewLogger().Error("failed to update sms status", "sms", sms, "error", err)
+		}
+		svc.UpdateSMSStatus(context.Background(), sms)
+		return nil
 
-	// // svc := h.app.SMSService(context.Background())
+	}); err != nil {
+		return err
+	}
 
-	// if err := h.app.Rabbit().Consume("sms.update", func(body []byte) error {
-	// 	return svc.UpdateSMSStatus(context.Background(), body)
-	// }); err != nil {
-	// 	return err
-	// }
 	<-ctx.Done()
 	h.app.Rabbit().Close()
 	logger.NewLogger().Info("consumer stopped")

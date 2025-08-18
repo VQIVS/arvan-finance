@@ -42,7 +42,7 @@ func (a *app) UserService(ctx context.Context) userPort.Service {
 }
 
 func (a *app) userServiceWithDB(db *gorm.DB) userPort.Service {
-	return user.NewService(storage.NewUserRepo(db))
+	return user.NewService(storage.NewUserRepo(db), a.rabbit)
 }
 
 func (a *app) Config() config.Config {
