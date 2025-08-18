@@ -32,7 +32,7 @@ func Run(appContainer app.App, cfg config.ServerConfig) error {
 
 func registerBillingAPI(appContainer app.App, cfg config.ServerConfig, router fiber.Router) {
 	userSvcGetter := userServiceGetter(appContainer, cfg)
-	router.Put("/credit", setTransaction(appContainer.DB()), CreditUserBalance(userSvcGetter))
-	router.Post("/create", CreateUser(userSvcGetter))
+	router.Put("/credit", CreditUserBalance(userSvcGetter))
+	router.Post("/create", setTransaction(appContainer.DB()), CreateUser(userSvcGetter))
 	router.Get("/:id", GetUserByID(userSvcGetter))
 }

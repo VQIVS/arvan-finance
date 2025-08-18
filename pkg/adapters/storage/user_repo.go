@@ -8,6 +8,7 @@ import (
 	"context"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type userRepo struct {
@@ -34,10 +35,23 @@ func (r *userRepo) GetByID(ctx context.Context, ID uint) (domain.User, error) {
 }
 
 func (r *userRepo) UpdateUserBalance(ctx context.Context, ID domain.UserID, amount float64) error {
+	tx := r.db.WithContext(ctx).Begin()
+	if tx.Error != nil {
+		return tx.Error
+	}
+
 	var user types.User
-	if err := r.db.WithContext(ctx).Where("id = ?", ID).First(&user).Error; err != nil {
+	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("id = ?", ID).First(&user).Error; err != nil {
+		tx.Rollback()
 		return err
 	}
+
 	user.Balance = amount
-	return r.db.WithContext(ctx).Save(&user).Error
+
+	if err := tx.Save(&user).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
 }
