@@ -3,23 +3,23 @@ package context
 import (
 	"context"
 	"log"
-	"log/slog"
-	"os"
+
+	"billing-service/pkg/logger"
 
 	"gorm.io/gorm"
 )
 
-var defaultLogger *slog.Logger
+var defaultLogger *logger.Logger
 
 func init() {
-	defaultLogger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	defaultLogger = logger.NewLogger()
 }
 
 type appContext struct {
 	context.Context
 	db           *gorm.DB
 	shouldCommit bool
-	logger       *slog.Logger
+	logger       *logger.Logger
 }
 
 type AppContextOpt func(*appContext) *appContext // option pattern
@@ -32,9 +32,9 @@ func WithDB(db *gorm.DB, shouldCommit bool) AppContextOpt {
 	}
 }
 
-func WithLogger(logger *slog.Logger) AppContextOpt {
+func WithLogger(l *logger.Logger) AppContextOpt {
 	return func(ac *appContext) *appContext {
-		ac.logger = logger
+		ac.logger = l
 		return ac
 	}
 }
@@ -102,13 +102,13 @@ func CommitOrRollback(ctx context.Context, shouldLog bool) error {
 	return commitErr
 }
 
-func SetLogger(ctx context.Context, logger *slog.Logger) {
+func SetLogger(ctx context.Context, l *logger.Logger) {
 	if appCtx, ok := ctx.(*appContext); ok {
-		appCtx.logger = logger
+		appCtx.logger = l
 	}
 }
 
-func GetLogger(ctx context.Context) *slog.Logger {
+func GetLogger(ctx context.Context) *logger.Logger {
 	appCtx, ok := ctx.(*appContext)
 	if !ok || appCtx.logger == nil {
 		return defaultLogger

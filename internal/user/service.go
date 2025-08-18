@@ -87,7 +87,6 @@ func (s *service) DebitUserBalance(ctx context.Context, body []byte) (event.SMSU
 	if err != nil {
 		return event.SMSUpdateEvent{}, err
 	}
-	logger.NewLogger().Debug("debit user balance", "userID", msg.UserID, "amount", msg.Amount)
 	return event.SMSUpdateEvent{
 		Domain: event.SMS,
 		SMSID:  msg.SMSID,

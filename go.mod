@@ -9,6 +9,7 @@ require (
 	github.com/streadway/amqp v1.1.0
 	github.com/swaggo/http-swagger v1.3.4
 	github.com/swaggo/swag v1.8.1
+	go.uber.org/zap v1.27.0
 	google.golang.org/genproto v0.0.0-20250811230008-5f3141c8851a
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.30.1
@@ -39,6 +40,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.51.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
+	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/crypto v0.40.0 // indirect
 	golang.org/x/net v0.42.0 // indirect
 	golang.org/x/sync v0.16.0 // indirect

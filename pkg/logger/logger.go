@@ -1,13 +1,46 @@
 package logger
 
 import (
-	"log/slog"
-	"os"
+	"sync"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
-func NewLogger() *slog.Logger {
-	return slog.New(slog.NewJSONHandler(os.Stdout, nil)).
-		With("trace_id", uuid.NewString())
+type Logger struct{ sugar *zap.SugaredLogger }
+
+var (
+	defaultSugar *zap.SugaredLogger
+	defaultOnce  sync.Once
+)
+
+func NewLogger() *Logger {
+	defaultOnce.Do(func() {
+		l, err := zap.NewProduction()
+		if err != nil {
+			l = zap.NewExample()
+		}
+		defaultSugar = l.Sugar()
+	})
+	return &Logger{sugar: defaultSugar.With("trace_id", uuid.NewString())}
+}
+
+func (l *Logger) Info(msg string, keysAndValues ...interface{}) {
+	if len(keysAndValues) > 0 {
+		l.sugar.Infow(msg, keysAndValues...)
+		return
+	}
+	l.sugar.Info(msg)
+}
+
+func (l *Logger) Error(msg string, keysAndValues ...interface{}) {
+	if len(keysAndValues) > 0 {
+		l.sugar.Errorw(msg, keysAndValues...)
+		return
+	}
+	l.sugar.Error(msg)
+}
+
+func (l *Logger) With(keysAndValues ...interface{}) *Logger {
+	return &Logger{sugar: l.sugar.With(keysAndValues...)}
 }
