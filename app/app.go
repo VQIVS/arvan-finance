@@ -6,6 +6,7 @@ import (
 	userPort "billing-service/internal/user/port"
 	"context"
 
+	"billing-service/pkg/adapters/rabbit"
 	"billing-service/pkg/adapters/storage"
 	appCtx "billing-service/pkg/context"
 	"billing-service/pkg/postgres"
@@ -17,10 +18,15 @@ type app struct {
 	db          *gorm.DB
 	cfg         config.Config
 	userService userPort.Service
+	rabbit      *rabbit.Rabbit
 }
 
 func (a *app) DB() *gorm.DB {
 	return a.db
+}
+
+func (a *app) Rabbit() *rabbit.Rabbit {
+	return a.rabbit
 }
 
 func (a *app) UserService(ctx context.Context) userPort.Service {
@@ -69,6 +75,14 @@ func NewApp(cfg config.Config) (App, error) {
 
 	if err := a.setDB(); err != nil {
 		return nil, err
+	}
+	// initialize rabbit connection if configured
+	if cfg.Rabbit.URL != "" {
+		r, err := rabbit.NewRabbit(cfg.Rabbit.URL)
+		if err != nil {
+			return nil, err
+		}
+		a.rabbit = r
 	}
 	return a, nil
 

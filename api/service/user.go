@@ -44,7 +44,7 @@ func (s *UserService) CreditUserBalance(ctx context.Context, req *presenter.User
 
 }
 
-func (s *UserService) GetUserByID(ctx context.Context, userID domain.UserID) (*presenter.UserResponse, error) {
+func (s *UserService) GetUser(ctx context.Context, userID domain.UserID) (*presenter.UserResponse, error) {
 	user, err := s.svc.GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, err

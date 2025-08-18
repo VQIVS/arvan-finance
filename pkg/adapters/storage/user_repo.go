@@ -33,27 +33,11 @@ func (r *userRepo) GetByID(ctx context.Context, ID uint) (domain.User, error) {
 	return *mapper.UserStorage2Domain(&user), nil
 }
 
-func (r *userRepo) CreditBalance(ctx context.Context, ID uint, amount float64) (domain.User, error) {
+func (r *userRepo) UpdateUserBalance(ctx context.Context, ID domain.UserID, amount float64) error {
 	var user types.User
 	if err := r.db.WithContext(ctx).Where("id = ?", ID).First(&user).Error; err != nil {
-		return domain.User{}, err
+		return err
 	}
-	user.Balance += float64(amount)
-	if err := r.db.WithContext(ctx).Save(&user).Error; err != nil {
-		return domain.User{}, err
-	}
-	return *mapper.UserStorage2Domain(&user), nil
-}
-
-func (r *userRepo) DebitBalance(ctx context.Context, ID uint, amount float64) (domain.User, error) {
-	var user types.User
-	if err := r.db.WithContext(ctx).Where("id = ?", ID).First(&user).Error; err != nil {
-		return domain.User{}, err
-	}
-	user.Balance -= float64(amount)
-	if err := r.db.WithContext(ctx).Save(&user).Error; err != nil {
-		return domain.User{}, err
-	}
-	return *mapper.UserStorage2Domain(&user), nil
-	// Implement HasSufficientBalance in Service Layer
+	user.Balance = amount
+	return r.db.WithContext(ctx).Save(&user).Error
 }

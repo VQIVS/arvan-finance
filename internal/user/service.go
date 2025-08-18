@@ -40,19 +40,37 @@ func (s *service) GetUserByID(ctx context.Context, ID domain.UserID) (domain.Use
 }
 
 func (s *service) CreditUserBalance(ctx context.Context, ID domain.UserID, amount float64) error {
-	_, err := s.repo.CreditBalance(ctx, uint(ID), amount)
+	if amount <= 0 {
+		return errors.New("invalid credit amount")
+	}
+	user, err := s.repo.GetByID(ctx, uint(ID))
 	if err != nil {
 		return ErrUserNotFound
+	}
+
+	user.Balance += amount
+
+	err = s.repo.UpdateUserBalance(ctx, ID, user.Balance)
+	if err != nil {
+		return err
 	}
 	return nil
 }
-func (s *service) ProcessDebitEvent(ctx context.Context, ID domain.UserID, amount float64) error {
-	user, err := s.repo.DebitBalance(ctx, uint(ID), amount)
+
+func (s *service) DebitUserBalance(ctx context.Context, ID domain.UserID, amount float64) error {
+	if amount <= 0 {
+		return errors.New("invalid debit amount")
+	}
+	user, err := s.repo.GetByID(ctx, uint(ID))
 	if err != nil {
 		return ErrUserNotFound
 	}
-	if !user.HasSufficientBalance(uint64(amount)) {
+	if user.Balance < amount {
 		return ErrInsufficientBalance
+	}
+	err = s.repo.UpdateUserBalance(ctx, ID, user.Balance-amount)
+	if err != nil {
+		return err
 	}
 	return nil
 }

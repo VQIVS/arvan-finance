@@ -83,7 +83,7 @@ func GetUserByID(svcGetter ServiceGetter[*service.UserService]) fiber.Handler {
 		if err != nil {
 			return fiber.ErrBadRequest
 		}
-		resp, err := svc.GetUserByID(c.UserContext(), domain.UserID(idUint))
+		resp, err := svc.GetUser(c.UserContext(), domain.UserID(idUint))
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 		}

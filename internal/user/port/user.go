@@ -8,6 +8,5 @@ import (
 type Repo interface {
 	Create(ctx context.Context, user domain.User) (domain.APIKey, error)
 	GetByID(ctx context.Context, ID uint) (domain.User, error)
-	CreditBalance(ctx context.Context, ID uint, amount float64) (domain.User, error)
-	DebitBalance(ctx context.Context, ID uint, amount float64) (domain.User, error)
+	UpdateUserBalance(ctx context.Context, ID domain.UserID, amount float64) error
 }

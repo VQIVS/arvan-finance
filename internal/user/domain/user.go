@@ -14,7 +14,3 @@ type User struct {
 	CreatedAt time.Time
 	DeletedAt time.Time
 }
-
-func (u *User) HasSufficientBalance(amount uint64) bool {
-	return u.Balance >= float64(amount)
-}
