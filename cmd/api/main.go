@@ -1,7 +1,7 @@
 package main
 
 import (
-	"billing-service/api/http"
+	"billing-service/api/handler/http"
 	"billing-service/app"
 	"billing-service/config"
 	"flag"
