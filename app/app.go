@@ -6,12 +6,11 @@ import (
 	userPort "billing-service/internal/user/port"
 	"billing-service/pkg/adapters/rabbit"
 	"billing-service/pkg/adapters/storage"
+	"billing-service/pkg/logger"
 	"billing-service/pkg/postgres"
 	"context"
 	"log/slog"
-	"os"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -65,7 +64,7 @@ func (a *app) setDB() error {
 	return nil
 }
 func NewApp(cfg config.Config) (App, error) {
-	l := slog.New(slog.NewJSONHandler(os.Stdout, nil)).With("trace_id", uuid.NewString())
+	l := logger.GetLogger()
 
 	a := &app{
 		cfg:    cfg,
@@ -76,7 +75,7 @@ func NewApp(cfg config.Config) (App, error) {
 		return nil, err
 	}
 	if cfg.Rabbit.URL != "" {
-		r, err := rabbit.NewRabbit(cfg.Rabbit.URL)
+		r, err := rabbit.NewRabbit(cfg.Rabbit.URL, l)
 		if err != nil {
 			return nil, err
 		}

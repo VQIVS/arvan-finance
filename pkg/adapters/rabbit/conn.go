@@ -2,16 +2,19 @@ package rabbit
 
 import (
 	"billing-service/config"
+	"billing-service/pkg/logger"
+	"log/slog"
 
 	"github.com/streadway/amqp"
 )
 
 type Rabbit struct {
-	Conn *amqp.Connection
-	Ch   *amqp.Channel
+	Conn   *amqp.Connection
+	Ch     *amqp.Channel
+	Logger *slog.Logger
 }
 
-func NewRabbit(url string) (*Rabbit, error) {
+func NewRabbit(url string, customLogger *slog.Logger) (*Rabbit, error) {
 	conn, err := amqp.Dial(url)
 	if err != nil {
 		return nil, err
@@ -21,7 +24,13 @@ func NewRabbit(url string) (*Rabbit, error) {
 		conn.Close()
 		return nil, err
 	}
-	return &Rabbit{Conn: conn, Ch: ch}, nil
+
+	log := customLogger
+	if log == nil {
+		log = logger.GetLogger()
+	}
+
+	return &Rabbit{Conn: conn, Ch: ch, Logger: log}, nil
 }
 
 func (r *Rabbit) Close() {

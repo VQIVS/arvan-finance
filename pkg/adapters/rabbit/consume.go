@@ -1,7 +1,5 @@
 package rabbit
 
-import "billing-service/pkg/logger"
-
 func (r *Rabbit) Consume(queueName string, handler func([]byte) error) error {
 	msgs, err := r.Ch.Consume(
 		queueName,
@@ -18,11 +16,11 @@ func (r *Rabbit) Consume(queueName string, handler func([]byte) error) error {
 
 	go func() {
 		for d := range msgs {
-			logger.NewLogger().Info("processing message from queue", "queue", queueName)
+			r.Logger.Info("processing message from queue", "queue", queueName)
 			if err := handler(d.Body); err != nil {
-				logger.NewLogger().Error("failed to process message from queue", "queue", queueName, "error", err)
+				r.Logger.Error("failed to process message from queue", "queue", queueName, "error", err)
 			} else {
-				logger.NewLogger().Info("successfully processed message from queue", "queue", queueName)
+				r.Logger.Info("successfully processed message from queue", "queue", queueName)
 			}
 		}
 	}()
