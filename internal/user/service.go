@@ -9,8 +9,10 @@ import (
 	"encoding/json"
 	"errors"
 	"log/slog"
+	"sync"
 )
 
+// TODO: make err handling better
 var (
 	ErrUserOnCreate        = errors.New("error on creating new user")
 	ErrUserNotFound        = errors.New("user not found")
@@ -21,6 +23,7 @@ type service struct {
 	repo   port.Repo
 	rabbit *rabbit.Rabbit
 	logger *slog.Logger
+	mu     sync.Mutex
 }
 
 func NewService(repo port.Repo, rabbit *rabbit.Rabbit) port.Service {
@@ -51,6 +54,10 @@ func (s *service) CreditUserBalance(ctx context.Context, ID domain.UserID, amoun
 	if amount <= 0 {
 		return errors.New("invalid credit amount")
 	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	user, err := s.repo.GetByID(ctx, uint(ID))
 	if err != nil {
 		return ErrUserNotFound
@@ -65,10 +72,6 @@ func (s *service) CreditUserBalance(ctx context.Context, ID domain.UserID, amoun
 	return nil
 }
 
-/*
-this function handles debit user balance events
-the service updates the user balance accordingly when a debit event is received
-*/
 func (s *service) DebitUserBalance(ctx context.Context, body []byte) (event.SMSUpdateEvent, error) {
 	var msg event.UserBalanceEvent
 	if err := json.Unmarshal(body, &msg); err != nil {
@@ -77,6 +80,9 @@ func (s *service) DebitUserBalance(ctx context.Context, body []byte) (event.SMSU
 	if msg.Amount <= 0 {
 		return event.SMSUpdateEvent{}, errors.New("invalid debit amount")
 	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
 	user, err := s.repo.GetByID(ctx, msg.UserID)
 	if err != nil {
@@ -96,16 +102,14 @@ func (s *service) DebitUserBalance(ctx context.Context, body []byte) (event.SMSU
 	}, nil
 }
 
-/*
-this function handles unsuccessful SMS events
-sms service sends an event when SMS delivery fails
-the service updates the user balance accordingly
-*/
 func (s *service) UnsuccessfulSMS(ctx context.Context, body []byte) error {
 	var msg event.UserBalanceEvent
 	if err := json.Unmarshal(body, &msg); err != nil {
 		return err
 	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	user, err := s.repo.GetByID(ctx, msg.UserID)
 	if err != nil {
 		return ErrUserNotFound
@@ -122,9 +126,6 @@ func (s *service) UnsuccessfulSMS(ctx context.Context, body []byte) error {
 	return nil
 }
 
-/*
-this function service sms update events to sms service
-*/
 func (s *service) UpdateSMSStatus(ctx context.Context, sms event.SMSUpdateEvent) error {
 	body, err := json.Marshal(sms)
 	if err != nil {
