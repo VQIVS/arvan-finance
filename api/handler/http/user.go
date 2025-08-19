@@ -2,7 +2,6 @@ package http
 
 import (
 	"billing-service/api/presenter"
-	"billing-service/api/service"
 	"billing-service/internal/user/domain"
 	"strconv"
 
@@ -20,9 +19,9 @@ import (
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /create [post]
-func CreateUser(svcGetter ServiceGetter[*service.UserService]) fiber.Handler {
+func CreateUser(svcGetter UserServiceGetter) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		svc := svcGetter(c.UserContext())
+		svc := svcGetter.GetUserService(c.UserContext())
 		var req presenter.UserRequest
 		if err := c.BodyParser(&req); err != nil {
 			return fiber.ErrBadRequest
@@ -46,9 +45,9 @@ func CreateUser(svcGetter ServiceGetter[*service.UserService]) fiber.Handler {
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /credit [put]
-func CreditUserBalance(svcGetter ServiceGetter[*service.UserService]) fiber.Handler {
+func CreditUserBalance(svcGetter UserServiceGetter) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		svc := svcGetter(c.UserContext())
+		svc := svcGetter.GetUserService(c.UserContext())
 		var req presenter.UserBalanceRequest
 		if err := c.BodyParser(&req); err != nil {
 			return fiber.ErrBadRequest
@@ -72,9 +71,9 @@ func CreditUserBalance(svcGetter ServiceGetter[*service.UserService]) fiber.Hand
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /{id} [get]
-func GetUserByID(svcGetter ServiceGetter[*service.UserService]) fiber.Handler {
+func GetUserByID(svcGetter UserServiceGetter) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		svc := svcGetter(c.UserContext())
+		svc := svcGetter.GetUserService(c.UserContext())
 		idStr := c.Params("id")
 		if idStr == "" {
 			return fiber.ErrBadRequest

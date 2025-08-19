@@ -5,6 +5,7 @@ import (
 	userPort "billing-service/internal/user/port"
 	"billing-service/pkg/adapters/rabbit"
 	"context"
+	"log/slog"
 
 	"gorm.io/gorm"
 )
@@ -14,4 +15,5 @@ type App interface {
 	DB() *gorm.DB
 	Config() config.Config
 	Rabbit() *rabbit.Rabbit
+	Logger() *slog.Logger
 }

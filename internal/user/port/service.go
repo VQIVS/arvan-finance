@@ -9,6 +9,7 @@ import (
 type Service interface {
 	CreateUser(ctx context.Context, user domain.User) (domain.APIKey, error)
 	GetUserByID(ctx context.Context, ID domain.UserID) (domain.User, error)
+	// TODO: add lock
 	CreditUserBalance(ctx context.Context, ID domain.UserID, amount float64) error
 	DebitUserBalance(ctx context.Context, body []byte) (event.SMSUpdateEvent, error)
 	UnsuccessfulSMS(ctx context.Context, body []byte) error

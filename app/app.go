@@ -4,13 +4,14 @@ import (
 	"billing-service/config"
 	"billing-service/internal/user"
 	userPort "billing-service/internal/user/port"
-	"context"
-
 	"billing-service/pkg/adapters/rabbit"
 	"billing-service/pkg/adapters/storage"
-	appCtx "billing-service/pkg/context"
 	"billing-service/pkg/postgres"
+	"context"
+	"log/slog"
+	"os"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -19,6 +20,7 @@ type app struct {
 	cfg         config.Config
 	userService userPort.Service
 	rabbit      *rabbit.Rabbit
+	logger      *slog.Logger
 }
 
 func (a *app) DB() *gorm.DB {
@@ -30,23 +32,18 @@ func (a *app) Rabbit() *rabbit.Rabbit {
 }
 
 func (a *app) UserService(ctx context.Context) userPort.Service {
-	db := appCtx.GetDB(ctx)
-	if db == nil {
-		if a.userService == nil {
-			a.userService = a.userServiceWithDB(a.db)
-		}
-		return a.userService
+	if a.userService == nil {
+		a.userService = user.NewService(storage.NewUserRepo(a.db), a.rabbit)
 	}
-
-	return a.userServiceWithDB(db)
-}
-
-func (a *app) userServiceWithDB(db *gorm.DB) userPort.Service {
-	return user.NewService(storage.NewUserRepo(db), a.rabbit)
+	return a.userService
 }
 
 func (a *app) Config() config.Config {
 	return a.cfg
+}
+
+func (a *app) Logger() *slog.Logger {
+	return a.logger
 }
 func (a *app) setDB() error {
 	db, err := postgres.NewPsqlGormConnection(postgres.DBConnOptions{
@@ -62,28 +59,28 @@ func (a *app) setDB() error {
 		return err
 	}
 
-	// run auto migrations for storage models
 	postgres.Migrate(db)
 
 	a.db = db
 	return nil
 }
 func NewApp(cfg config.Config) (App, error) {
+	l := slog.New(slog.NewJSONHandler(os.Stdout, nil)).With("trace_id", uuid.NewString())
+
 	a := &app{
-		cfg: cfg,
+		cfg:    cfg,
+		logger: l,
 	}
 
 	if err := a.setDB(); err != nil {
 		return nil, err
 	}
-	// initialize rabbit connection if configured
 	if cfg.Rabbit.URL != "" {
 		r, err := rabbit.NewRabbit(cfg.Rabbit.URL)
 		if err != nil {
 			return nil, err
 		}
 		a.rabbit = r
-		// initialize queues from config
 		if err := a.rabbit.InitQueues(cfg.Rabbit.Queues); err != nil {
 			return nil, err
 		}

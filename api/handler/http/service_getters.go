@@ -7,10 +7,16 @@ import (
 	"context"
 )
 
-// dep injection pattern
-// user service transient instance handler
-func userServiceGetter(appContainer app.App, cfg config.ServerConfig) ServiceGetter[*service.UserService] {
-	return func(ctx context.Context) *service.UserService {
-		return service.NewUserService(appContainer.UserService(ctx))
+type userServiceProvider struct {
+	appContainer app.App
+}
+
+func (p *userServiceProvider) GetUserService(ctx context.Context) *service.UserService {
+	return service.NewUserService(p.appContainer.UserService(ctx))
+}
+
+func newUserServiceGetter(appContainer app.App, cfg config.ServerConfig) UserServiceGetter {
+	return &userServiceProvider{
+		appContainer: appContainer,
 	}
 }

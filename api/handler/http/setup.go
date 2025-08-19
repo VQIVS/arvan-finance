@@ -15,7 +15,7 @@ import (
 func Run(appContainer app.App, cfg config.ServerConfig) error {
 	router := fiber.New()
 
-	api := router.Group("/api/v1", setUserContext)
+	api := router.Group("/api/v1")
 
 	registerBillingAPI(appContainer, cfg, api)
 
@@ -31,8 +31,8 @@ func Run(appContainer app.App, cfg config.ServerConfig) error {
 }
 
 func registerBillingAPI(appContainer app.App, cfg config.ServerConfig, router fiber.Router) {
-	userSvcGetter := userServiceGetter(appContainer, cfg)
+	userSvcGetter := newUserServiceGetter(appContainer, cfg)
 	router.Put("/credit", CreditUserBalance(userSvcGetter))
-	router.Post("/create", setTransaction(appContainer.DB()), CreateUser(userSvcGetter))
+	router.Post("/create", CreateUser(userSvcGetter))
 	router.Get("/:id", GetUserByID(userSvcGetter))
 }

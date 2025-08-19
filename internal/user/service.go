@@ -5,10 +5,10 @@ import (
 	"billing-service/internal/user/event"
 	"billing-service/internal/user/port"
 	"billing-service/pkg/adapters/rabbit"
-	"billing-service/pkg/logger"
 	"context"
 	"encoding/json"
 	"errors"
+	"log/slog"
 )
 
 var (
@@ -20,12 +20,14 @@ var (
 type service struct {
 	repo   port.Repo
 	rabbit *rabbit.Rabbit
+	logger *slog.Logger
 }
 
 func NewService(repo port.Repo, rabbit *rabbit.Rabbit) port.Service {
 	return &service{
 		repo:   repo,
 		rabbit: rabbit,
+		logger: slog.Default(),
 	}
 }
 
@@ -128,6 +130,6 @@ func (s *service) UpdateSMSStatus(ctx context.Context, sms event.SMSUpdateEvent)
 	if err != nil {
 		return err
 	}
-	logger.NewLogger().Info("sending sms update event", "sms", sms)
+	s.logger.Info("sending sms update event", "sms", sms)
 	return s.rabbit.Publish(body, "finance.sms.update")
 }

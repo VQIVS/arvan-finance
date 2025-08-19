@@ -4,7 +4,6 @@ import (
 	"billing-service/api/handler/consumer"
 	"billing-service/app"
 	"billing-service/config"
-	"billing-service/pkg/logger"
 	"context"
 	"log"
 	"os"
@@ -20,7 +19,7 @@ func main() {
 	}
 
 	h := consumer.New(a)
-	logger.NewLogger().Info("consumer started")
+	a.Logger().Info("consumer started")
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
 	defer stop()
