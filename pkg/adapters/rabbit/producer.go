@@ -7,21 +7,9 @@ import (
 )
 
 func (r *Rabbit) Publish(Body []byte, Q string) error {
-
-	q, err := r.Ch.QueueDeclare(
-		Q,
-		false,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		return err
-	}
 	pubErr := r.Ch.Publish(
 		"",
-		q.Name,
+		Q,
 		false,
 		false,
 		amqp.Publishing{
@@ -30,9 +18,9 @@ func (r *Rabbit) Publish(Body []byte, Q string) error {
 		},
 	)
 	if pubErr != nil {
-		return fmt.Errorf("failed to publish message to queue %s: %v, message: %s", q.Name, pubErr, Body)
+		return fmt.Errorf("failed to publish message to queue %s: %v, message: %s", Q, pubErr, Body)
 	}
-	r.Logger.Info("published message to queue", "queue", q.Name, "message", string(Body))
+	r.Logger.Info("published message to queue", "queue", Q, "message", string(Body))
 
 	return nil
 
