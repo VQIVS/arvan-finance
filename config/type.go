@@ -28,5 +28,11 @@ type RedisConfig struct {
 }
 
 type RabbitConfig struct {
-	URL string `json:"url"`
+	URL    string        `json:"url"`
+	Queues []QueueConfig `json:"queues"`
+}
+
+type QueueConfig struct {
+	Name    string `json:"name"`
+	Durable bool   `json:"durable"`
 }

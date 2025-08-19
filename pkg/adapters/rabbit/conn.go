@@ -1,6 +1,8 @@
 package rabbit
 
 import (
+	"billing-service/config"
+
 	"github.com/streadway/amqp"
 )
 
@@ -29,4 +31,24 @@ func (r *Rabbit) Close() {
 	if r.Conn != nil {
 		_ = r.Conn.Close()
 	}
+}
+
+func (r *Rabbit) InitQueues(queues []config.QueueConfig) error {
+	if r == nil || r.Ch == nil {
+		return nil
+	}
+	for _, q := range queues {
+		_, err := r.Ch.QueueDeclare(
+			q.Name,
+			q.Durable,
+			false,
+			false,
+			false,
+			nil,
+		)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
