@@ -6,11 +6,16 @@
         "user": "postgres",
         "password": "changeme"
     },
-    "sms_fee": 0.05,
     "server": {
         "httpPort": 8081
     },
     "rabbit": {
-        "url": "amqp://guest:guest@localhost:5672/"
+        "url": "amqp://guest:guest@localhost:5672/",
+        "queues": [
+            {
+                "name": "finance.sms.update",
+                "durable": true
+            }
+        ]
     }
 }

@@ -2,6 +2,7 @@ package consumer
 
 import (
 	"billing-service/app"
+	"billing-service/pkg/constants"
 	"context"
 )
 
@@ -19,7 +20,7 @@ func (h *Handler) Start(ctx context.Context) error {
 		return nil
 	}
 	svc := h.app.UserService(context.Background())
-	if err := h.app.Rabbit().Consume("sms.user.balance.update", func(b []byte) error {
+	if err := h.app.Rabbit().Consume(constants.QueueUserBalanceUpdate, func(b []byte) error {
 		sms, err := svc.DebitUserBalance(context.Background(), b)
 		svc.UpdateSMSStatus(context.Background(), sms)
 		if err != nil {
