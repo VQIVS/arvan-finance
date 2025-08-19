@@ -1,16 +1,22 @@
-FROM golang:1.23 as builder
+FROM golang:1.24-slim as builder
 
-WORKDIR /github.com/babyhando/order-service
+WORKDIR /app
 
-RUN CGO_ENABLED=0 go build -o ./order-api cmd/main.go
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -o ./finance-api cmd/api/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o ./finance-consumer cmd/consumer/main.go
 
 FROM alpine as deploy
 
-RUN apk add --no-cache tzdata
+RUN apk add --no-cache tzdata ca-certificates
 ENV TZ=Asia/Tehran
 
-WORKDIR /github.com/babyhando/order-service
+WORKDIR /app
 
-COPY --from=builder /github.com/babyhando/order-service/order-api ./order-api
+COPY --from=builder /app/finance-api ./finance-api
+COPY --from=builder /app/finance-consumer ./finance-consumer
+COPY config.json ./config.json
 
-CMD [ "./billing-api" , "--config" , "/etc/config.json"]
+EXPOSE 8080
+
+CMD ["./finance-api"]
