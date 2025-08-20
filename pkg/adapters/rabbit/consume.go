@@ -1,11 +1,15 @@
 package rabbit
 
-import "github.com/google/uuid"
+import (
+	"billing-service/pkg/constants"
+
+	"github.com/google/uuid"
+)
 
 func (r *Rabbit) Consume(queueName string, handler func([]byte) error) error {
 	msgs, err := r.Ch.Consume(
 		queueName,
-		"amqp.topic",
+		constants.Exchange,
 		true,
 		false,
 		false,

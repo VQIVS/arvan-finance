@@ -58,7 +58,7 @@ func (r *Rabbit) InitQueues(queue string) error {
 	if err != nil {
 		return err
 	}
-	err = r.Ch.QueueBind(queueName, constants.KeyBalanceUpdate, "amq.topic", false, nil)
+	err = r.Ch.QueueBind(queueName, constants.KeyBalanceUpdate, constants.Exchange, false, nil)
 	if err != nil {
 		return err
 	}

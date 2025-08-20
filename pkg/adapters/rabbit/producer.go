@@ -1,6 +1,7 @@
 package rabbit
 
 import (
+	"billing-service/pkg/constants"
 	"fmt"
 
 	"github.com/streadway/amqp"
@@ -8,7 +9,7 @@ import (
 
 func (r *Rabbit) Publish(Body []byte, Q string) error {
 	pubErr := r.Ch.Publish(
-		"amq.topic",
+		constants.Exchange,
 		Q,
 		false,
 		false,
