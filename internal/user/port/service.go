@@ -7,7 +7,7 @@ import (
 )
 
 type Service interface {
-	CreateUser(ctx context.Context, user domain.User) (domain.APIKey, error)
+	CreateUser(ctx context.Context, user domain.User) (domain.User, error)
 	GetUserByID(ctx context.Context, ID domain.UserID) (domain.User, error)
 	// TODO: add lock
 	CreditUserBalance(ctx context.Context, ID domain.UserID, amount float64) error

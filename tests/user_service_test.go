@@ -37,12 +37,12 @@ type testUserService struct {
 	mockQueue map[string][][]byte
 }
 
-func (s *testUserService) CreateUser(ctx context.Context, user domain.User) (domain.APIKey, error) {
-	apiKey, err := s.repo.Create(ctx, user)
+func (s *testUserService) CreateUser(ctx context.Context, user domain.User) (domain.User, error) {
+	createdUser, err := s.repo.Create(ctx, user)
 	if err != nil {
-		return "", err
+		return domain.User{}, err
 	}
-	return apiKey, nil
+	return createdUser, nil
 }
 
 func (s *testUserService) GetUserByID(ctx context.Context, ID domain.UserID) (domain.User, error) {
@@ -130,11 +130,11 @@ func (s *testUserService) UpdateSMSStatus(ctx context.Context, sms event.SMSUpda
 
 func TestCreateUser(t *testing.T) {
 	tests := []struct {
-		name           string
-		user           domain.User
-		repoError      error
-		expectedError  error
-		expectedAPIKey domain.APIKey
+		name          string
+		user          domain.User
+		repoError     error
+		expectedError error
+		expectedUser  domain.User
 	}{
 		{
 			name: "Success",
@@ -142,8 +142,12 @@ func TestCreateUser(t *testing.T) {
 				Balance:   100.0,
 				CreatedAt: time.Now(),
 			},
-			expectedAPIKey: "test-api-key",
-			expectedError:  nil,
+			expectedUser: domain.User{
+				ID:      1,
+				Balance: 100.0,
+				APIKey:  "test-api-key",
+			},
+			expectedError: nil,
 		},
 		{
 			name: "Repository Error",
@@ -164,14 +168,22 @@ func TestCreateUser(t *testing.T) {
 				service.mockRepo.SetCreateError(tt.repoError)
 			}
 
-			apiKey, err := service.service.CreateUser(context.Background(), tt.user)
+			createdUser, err := service.service.CreateUser(context.Background(), tt.user)
 
 			if (err != nil) != (tt.expectedError != nil) {
 				t.Errorf("Expected error: %v, got: %v", tt.expectedError, err)
 			}
 
-			if err == nil && apiKey != tt.expectedAPIKey {
-				t.Errorf("Expected API key: %v, got: %v", tt.expectedAPIKey, apiKey)
+			if err == nil {
+				if createdUser.APIKey != tt.expectedUser.APIKey {
+					t.Errorf("Expected API key: %v, got: %v", tt.expectedUser.APIKey, createdUser.APIKey)
+				}
+				if createdUser.Balance != tt.expectedUser.Balance {
+					t.Errorf("Expected balance: %v, got: %v", tt.expectedUser.Balance, createdUser.Balance)
+				}
+				if createdUser.ID == 0 {
+					t.Errorf("Expected user ID to be assigned, got: %v", createdUser.ID)
+				}
 			}
 		})
 	}

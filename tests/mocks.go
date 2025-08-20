@@ -28,9 +28,9 @@ func NewMockUserRepo() *MockUserRepo {
 	}
 }
 
-func (m *MockUserRepo) Create(ctx context.Context, user domain.User) (domain.APIKey, error) {
+func (m *MockUserRepo) Create(ctx context.Context, user domain.User) (domain.User, error) {
 	if m.createError != nil {
-		return "", m.createError
+		return domain.User{}, m.createError
 	}
 
 	m.mu.Lock()
@@ -45,7 +45,7 @@ func (m *MockUserRepo) Create(ctx context.Context, user domain.User) (domain.API
 	user.APIKey = apiKey
 
 	m.users[uint(user.ID)] = user
-	return apiKey, nil
+	return user, nil
 }
 
 func (m *MockUserRepo) GetByID(ctx context.Context, ID uint) (domain.User, error) {
@@ -149,7 +149,7 @@ type MockUserService struct {
 	rabbit *MockRabbit
 }
 
-func (s *MockUserService) CreateUser(ctx context.Context, user domain.User) (domain.APIKey, error) {
+func (s *MockUserService) CreateUser(ctx context.Context, user domain.User) (domain.User, error) {
 	return s.repo.Create(ctx, user)
 }
 

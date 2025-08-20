@@ -21,9 +21,12 @@ func NewUserRepo(db *gorm.DB) port.Repo {
 	}
 }
 
-func (r *userRepo) Create(ctx context.Context, user domain.User) (domain.APIKey, error) {
+func (r *userRepo) Create(ctx context.Context, user domain.User) (domain.User, error) {
 	u := mapper.UserDoamin2Storage(user)
-	return domain.APIKey(u.APIKey), r.db.WithContext(ctx).Create(u).Error
+	if err := r.db.WithContext(ctx).Create(u).Error; err != nil {
+		return domain.User{}, err
+	}
+	return *mapper.UserStorage2Domain(u), nil
 }
 
 func (r *userRepo) GetByID(ctx context.Context, ID uint) (domain.User, error) {

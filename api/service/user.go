@@ -15,7 +15,7 @@ func NewUserService(svc port.Service) *UserService {
 	return &UserService{svc: svc}
 }
 func (s *UserService) CreateUser(ctx context.Context, req *presenter.UserRequest) (*presenter.UserResponse, error) {
-	apiKey, err := s.svc.CreateUser(ctx, domain.User{
+	user, err := s.svc.CreateUser(ctx, domain.User{
 		APIKey:  req.APIKey,
 		Balance: req.Balance,
 	})
@@ -23,7 +23,9 @@ func (s *UserService) CreateUser(ctx context.Context, req *presenter.UserRequest
 		return nil, err
 	}
 	return &presenter.UserResponse{
-		APIKey: apiKey,
+		ID:      user.ID,
+		APIKey:  user.APIKey,
+		Balance: user.Balance,
 	}, nil
 }
 
