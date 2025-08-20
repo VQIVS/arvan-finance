@@ -45,6 +45,15 @@ func (a *app) Config() config.Config {
 func (a *app) Logger() *slog.Logger {
 	return a.logger
 }
+
+func (a *app) Close() error {
+	if a.rabbit != nil {
+		a.rabbit.Close()
+		a.logger.Info("rabbit connection closed")
+	}
+	return nil
+}
+
 func (a *app) setDB() error {
 	db, err := postgres.NewPsqlGormConnection(postgres.DBConnOptions{
 		User:   a.cfg.DB.User,

@@ -20,6 +20,12 @@ func main() {
 		log.Fatalf("failed to create app: %v", err)
 	}
 
+	defer func() {
+		if err := a.Close(); err != nil {
+			a.Logger().With("trace_id", uuid.NewString()).Error("failed to close app", "error", err)
+		}
+	}()
+
 	h := consumer.New(a)
 	a.Logger().With("trace_id", uuid.NewString()).Info("consumer started")
 

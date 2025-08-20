@@ -16,4 +16,5 @@ type App interface {
 	Config() config.Config
 	Rabbit() *rabbit.Rabbit
 	Logger() *slog.Logger
+	Close() error
 }

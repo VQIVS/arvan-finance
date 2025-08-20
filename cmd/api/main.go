@@ -22,5 +22,11 @@ func main() {
 
 	appContainer := app.NewMustApp(c)
 
+	defer func() {
+		if err := appContainer.Close(); err != nil {
+			log.Printf("failed to close app: %v", err)
+		}
+	}()
+
 	log.Fatal(http.Run(appContainer, c.Server))
 }
