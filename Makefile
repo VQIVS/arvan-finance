@@ -27,4 +27,4 @@ run-consumer:
 	go run cmd/consumer/main.go
 
 run-dev:
-	$(MAKE) build && ($(MAKE) run-api & $(MAKE) run-consumer)
+	$(MAKE) build && $(MAKE) swagger && ($(MAKE) run-api & $(MAKE) run-consumer)

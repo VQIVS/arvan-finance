@@ -9,6 +9,7 @@ import (
 
 type userServiceProvider struct {
 	appContainer app.App
+	cfg          config.ServerConfig
 }
 
 func (p *userServiceProvider) GetUserService(ctx context.Context) *service.UserService {
@@ -18,5 +19,6 @@ func (p *userServiceProvider) GetUserService(ctx context.Context) *service.UserS
 func newUserServiceGetter(appContainer app.App, cfg config.ServerConfig) UserServiceGetter {
 	return &userServiceProvider{
 		appContainer: appContainer,
+		cfg:          cfg,
 	}
 }
