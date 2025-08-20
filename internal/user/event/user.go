@@ -22,7 +22,9 @@ type UserBalanceEvent struct {
 }
 
 type SMSUpdateEvent struct {
-	Domain Domain `json:"domain"`
-	SMSID  uint   `json:"sms_id"`
-	Status Status `json:"status"`
+	Domain Domain  `json:"domain"`
+	SMSID  uint    `json:"sms_id"`
+	UserID uint    `json:"user_id"`
+	Amount float64 `json:"amount"`
+	Status Status  `json:"status"`
 }

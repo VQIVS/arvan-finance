@@ -19,7 +19,10 @@ func (h *Handler) Start(ctx context.Context) error {
 		h.app.Logger().Info("no rabbit configured, consumer won't start")
 		return nil
 	}
+
 	svc := h.app.UserService(context.Background())
+
+	// Consumer for user balance updates
 	if err := h.app.Rabbit().Consume(constants.QueueUserBalanceUpdate, func(b []byte) error {
 		sms, err := svc.DebitUserBalance(context.Background(), b)
 		svc.UpdateSMSStatus(context.Background(), sms)
@@ -28,7 +31,13 @@ func (h *Handler) Start(ctx context.Context) error {
 		}
 		svc.UpdateSMSStatus(context.Background(), sms)
 		return nil
+	}); err != nil {
+		return err
+	}
 
+	// Consumer for Credit user balance if failed to sent to mno
+	if err := h.app.Rabbit().Consume(constants.QueueSMSUpdate, func(b []byte) error {
+		return h.handleSMSUpdateFail(context.Background(), b)
 	}); err != nil {
 		return err
 	}
@@ -36,5 +45,15 @@ func (h *Handler) Start(ctx context.Context) error {
 	<-ctx.Done()
 	h.app.Rabbit().Close()
 	h.app.Logger().Info("consumer stopped")
+	return nil
+}
+
+func (h *Handler) handleSMSUpdateFail(ctx context.Context, data []byte) error {
+	h.app.Logger().Info("processing SMS update fail", "data", string(data))
+	svc := h.app.UserService(ctx)
+	if err := svc.UnsuccessfulSMS(ctx, data); err != nil {
+		return err
+	}
+	h.app.Logger().Info("credit user balance updated", "data", string(data))
 	return nil
 }

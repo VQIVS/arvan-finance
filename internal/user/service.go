@@ -99,12 +99,14 @@ func (s *service) DebitUserBalance(ctx context.Context, body []byte) (event.SMSU
 	return event.SMSUpdateEvent{
 		Domain: event.SMS,
 		SMSID:  msg.SMSID,
+		UserID: msg.UserID,
+		Amount: msg.Amount,
 		Status: event.StatusSuccess,
 	}, nil
 }
 
 func (s *service) UnsuccessfulSMS(ctx context.Context, body []byte) error {
-	var msg event.UserBalanceEvent
+	var msg event.SMSUpdateEvent
 	if err := json.Unmarshal(body, &msg); err != nil {
 		return err
 	}
