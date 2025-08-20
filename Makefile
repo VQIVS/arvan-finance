@@ -1,4 +1,4 @@
-.PHONY: build run run-dev run-api run-consumer test clean swagger docker-build lint lint-fix lint-detailed check install-tools security
+.PHONY: build run run-dev run-api run-consumer test clean swagger docker-build docker-run docker-stop lint lint-fix lint-detailed check install-tools security
 
 build:
 	go build -o ./bin/api ./cmd/api
@@ -63,3 +63,12 @@ run-consumer:
 
 run-dev:
 	$(MAKE) build && $(MAKE) swagger && ($(MAKE) run-api & $(MAKE) run-consumer)
+
+docker-build:
+	docker build -t finance-service -f build/Dockerfile .
+
+docker-logs:
+	docker-compose logs -fn100 
+
+docker-clean:
+	docker system prune -f
