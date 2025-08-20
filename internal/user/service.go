@@ -36,13 +36,12 @@ func NewService(repo port.Repo, rabbit *rabbit.Rabbit) port.Service {
 		logger: slog.Default(),
 	}
 }
-
-func (s *service) CreateUser(ctx context.Context, user domain.User) (domain.APIKey, error) {
-	apiKey, err := s.repo.Create(ctx, user)
+func (s *service) CreateUser(ctx context.Context, user domain.User) (domain.User, error) {
+	user, err := s.repo.Create(ctx, user)
 	if err != nil {
-		return "", err
+		return domain.User{}, err
 	}
-	return apiKey, nil
+	return user, nil
 }
 
 func (s *service) GetUserByID(ctx context.Context, ID domain.UserID) (domain.User, error) {
@@ -89,10 +88,18 @@ func (s *service) DebitUserBalance(ctx context.Context, body []byte) (event.SMSU
 
 	user, err := s.repo.GetByID(ctx, msg.UserID)
 	if err != nil {
-		return event.SMSUpdateEvent{}, ErrUserNotFound
+		return event.SMSUpdateEvent{
+			Domain: event.SMS,
+			SMSID:  msg.SMSID,
+			Status: event.StatusFailed,
+		}, ErrUserNotFound
 	}
 	if user.Balance < msg.Amount {
-		return event.SMSUpdateEvent{}, ErrInsufficientBalance
+		return event.SMSUpdateEvent{
+			Domain: event.SMS,
+			SMSID:  msg.SMSID,
+			Status: event.StatusFailed,
+		}, ErrInsufficientBalance
 	}
 	err = s.repo.UpdateUserBalance(ctx, domain.UserID(msg.UserID), user.Balance-msg.Amount)
 	if err != nil {
