@@ -619,7 +619,10 @@ func TestUpdateSMSStatus(t *testing.T) {
 				}
 
 				var publishedEvent event.SMSUpdateEvent
-				json.Unmarshal(service.mockQueue[tt.expectedQueue][0], &publishedEvent)
+				if err := json.Unmarshal(service.mockQueue[tt.expectedQueue][0], &publishedEvent); err != nil {
+					t.Errorf("Failed to unmarshal published event: %v", err)
+					return
+				}
 
 				if publishedEvent.SMSID != tt.event.SMSID {
 					t.Errorf("Expected SMS ID: %v, got: %v", tt.event.SMSID, publishedEvent.SMSID)

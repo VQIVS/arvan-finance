@@ -21,7 +21,7 @@ func NewRabbit(url string, customLogger *slog.Logger) (*Rabbit, error) {
 	}
 	ch, err := conn.Channel()
 	if err != nil {
-		conn.Close()
+		_ = conn.Close() // Ignore close error, prioritize original error
 		return nil, err
 	}
 

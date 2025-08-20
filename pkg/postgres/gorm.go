@@ -36,5 +36,7 @@ func NewPsqlGormConnection(opt DBConnOptions) (*gorm.DB, error) {
 func Migrate(db *gorm.DB) {
 	migrator := db.Migrator()
 	// storage models
-	migrator.AutoMigrate(&types.User{})
+	if err := migrator.AutoMigrate(&types.User{}); err != nil {
+		panic("failed to auto-migrate User table: " + err.Error())
+	}
 }

@@ -259,7 +259,7 @@ func BenchmarkHighVolumeTransactions(b *testing.B) {
 					Domain: event.SMS,
 				}
 				eventBytes, _ := json.Marshal(eventData)
-				userService.DebitUserBalance(ctx, eventBytes)
+				_, _ = userService.DebitUserBalance(ctx, eventBytes)
 			}
 			i++
 		}
@@ -297,9 +297,9 @@ func BenchmarkStressTest(b *testing.B) {
 
 				switch j % 4 {
 				case 0:
-					userService.GetUserByID(ctx, userID)
+					_, _ = userService.GetUserByID(ctx, userID)
 				case 1:
-					userService.CreditUserBalance(ctx, userID, 10.0)
+					_ = userService.CreditUserBalance(ctx, userID, 10.0)
 				case 2:
 					eventData := event.UserBalanceEvent{
 						UserID: uint(userID),
@@ -309,13 +309,13 @@ func BenchmarkStressTest(b *testing.B) {
 						Domain: event.SMS,
 					}
 					eventBytes, _ := json.Marshal(eventData)
-					userService.DebitUserBalance(ctx, eventBytes)
+					_, _ = userService.DebitUserBalance(ctx, eventBytes)
 				case 3:
 					newUser := domain.User{
 						Balance:   1000.0,
 						CreatedAt: time.Now(),
 					}
-					userService.CreateUser(ctx, newUser)
+					_, _ = userService.CreateUser(ctx, newUser)
 				}
 			}
 		}(i)

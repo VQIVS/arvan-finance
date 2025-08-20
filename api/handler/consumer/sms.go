@@ -28,7 +28,9 @@ func (h *Handler) Start(ctx context.Context) error {
 
 	if err := h.app.Rabbit().Consume(queue, func(b []byte) error {
 		sms, err := svc.DebitUserBalance(context.Background(), b)
-		svc.UpdateSMSStatus(context.Background(), sms)
+		if updateErr := svc.UpdateSMSStatus(context.Background(), sms); updateErr != nil {
+			h.app.Logger().With("trace_id", uuid.NewString()).Error("failed to update sms status", "sms", sms, "error", updateErr)
+		}
 		if err != nil {
 			h.app.Logger().With("trace_id", uuid.NewString()).Error("failed to update sms status", "sms", sms, "error", err)
 		}
