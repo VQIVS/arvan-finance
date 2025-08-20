@@ -32,7 +32,6 @@ func (h *Handler) Start(ctx context.Context) error {
 		if err != nil {
 			h.app.Logger().With("trace_id", uuid.NewString()).Error("failed to update sms status", "sms", sms, "error", err)
 		}
-		svc.UpdateSMSStatus(context.Background(), sms)
 		return nil
 
 	}); err != nil {
