@@ -5,6 +5,8 @@ import (
 	"billing-service/pkg/adapters/rabbit"
 	"billing-service/pkg/constants"
 	"context"
+
+	"github.com/google/uuid"
 )
 
 type Handler struct {
@@ -17,7 +19,7 @@ func New(a app.App) *Handler {
 
 func (h *Handler) Start(ctx context.Context) error {
 	if h.app == nil || h.app.Rabbit() == nil {
-		h.app.Logger().Info("no rabbit configured, consumer won't start")
+		h.app.Logger().With("trace_id", uuid.NewString()).Info("no rabbit configured, consumer won't start")
 		return nil
 	}
 
@@ -28,7 +30,7 @@ func (h *Handler) Start(ctx context.Context) error {
 		sms, err := svc.DebitUserBalance(context.Background(), b)
 		svc.UpdateSMSStatus(context.Background(), sms)
 		if err != nil {
-			h.app.Logger().Error("failed to update sms status", "sms", sms, "error", err)
+			h.app.Logger().With("trace_id", uuid.NewString()).Error("failed to update sms status", "sms", sms, "error", err)
 		}
 		svc.UpdateSMSStatus(context.Background(), sms)
 		return nil
@@ -39,6 +41,6 @@ func (h *Handler) Start(ctx context.Context) error {
 
 	<-ctx.Done()
 	// h.app.Rabbit().Close()
-	h.app.Logger().Info("consumer stopped")
+	h.app.Logger().With("trace_id", uuid.NewString()).Info("consumer stopped")
 	return nil
 }

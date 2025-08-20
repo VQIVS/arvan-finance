@@ -1,5 +1,7 @@
 package rabbit
 
+import "github.com/google/uuid"
+
 func (r *Rabbit) Consume(queueName string, handler func([]byte) error) error {
 	msgs, err := r.Ch.Consume(
 		queueName,
@@ -16,11 +18,11 @@ func (r *Rabbit) Consume(queueName string, handler func([]byte) error) error {
 
 	go func() {
 		for d := range msgs {
-			r.Logger.Info("processing message from queue", "queue", queueName)
+			r.Logger.With("trace_id", uuid.NewString()).Info("processing message from queue", "queue", queueName)
 			if err := handler(d.Body); err != nil {
-				r.Logger.Error("failed to process message from queue", "queue", queueName, "error", err)
+				r.Logger.With("trace_id", uuid.NewString()).Error("failed to process message from queue", "queue", queueName, "error", err)
 			} else {
-				r.Logger.Info("successfully processed message from queue", "queue", queueName)
+				r.Logger.With("trace_id", uuid.NewString()).Info("successfully processed message from queue", "queue", queueName)
 			}
 		}
 	}()

@@ -11,6 +11,8 @@ import (
 	"errors"
 	"log/slog"
 	"sync"
+
+	"github.com/google/uuid"
 )
 
 // TODO: make err handling better
@@ -132,6 +134,6 @@ func (s *service) UpdateSMSStatus(ctx context.Context, sms event.SMSUpdateEvent)
 	if err != nil {
 		return err
 	}
-	s.logger.Info("sending sms update event", "sms", sms)
+	s.logger.With("trace_id", uuid.NewString()).Info("sending sms update event", "sms", sms)
 	return s.rabbit.Publish(body, constants.KeySMSUpdate)
 }

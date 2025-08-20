@@ -8,6 +8,8 @@ import (
 	"log"
 	"os"
 	"os/signal"
+
+	"github.com/google/uuid"
 )
 
 func main() {
@@ -19,7 +21,7 @@ func main() {
 	}
 
 	h := consumer.New(a)
-	a.Logger().Info("consumer started")
+	a.Logger().With("trace_id", uuid.NewString()).Info("consumer started")
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
 	defer stop()
