@@ -14,6 +14,9 @@ deps:
 	go mod download
 	go mod tidy
 
+swagger:
+	swag init -g ./cmd/api/main.go -o ./docs
+
 fmt:
 	go fmt ./...
 

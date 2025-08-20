@@ -17,7 +17,7 @@ func Run(appContainer app.App, cfg config.ServerConfig) error {
 
 	api := router.Group("/api/v1")
 
-	registerBillingAPI(appContainer, cfg, api)
+	registerFinanceAPI(appContainer, cfg, api)
 
 	router.Use(cors.New())
 
@@ -30,7 +30,7 @@ func Run(appContainer app.App, cfg config.ServerConfig) error {
 	return router.Listen(fmt.Sprintf(":%d", cfg.HttpPort))
 }
 
-func registerBillingAPI(appContainer app.App, cfg config.ServerConfig, router fiber.Router) {
+func registerFinanceAPI(appContainer app.App, cfg config.ServerConfig, router fiber.Router) {
 	userSvcGetter := newUserServiceGetter(appContainer, cfg)
 	router.Put("/credit", CreditUserBalance(userSvcGetter))
 	router.Post("/create", CreateUser(userSvcGetter))

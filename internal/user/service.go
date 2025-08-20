@@ -6,13 +6,12 @@ import (
 	"billing-service/internal/user/port"
 	"billing-service/pkg/adapters/rabbit"
 	"billing-service/pkg/constants"
+	"billing-service/pkg/logger"
 	"context"
 	"encoding/json"
 	"errors"
 	"log/slog"
 	"sync"
-
-	"github.com/google/uuid"
 )
 
 // TODO: make err handling better
@@ -141,6 +140,6 @@ func (s *service) UpdateSMSStatus(ctx context.Context, sms event.SMSUpdateEvent)
 	if err != nil {
 		return err
 	}
-	s.logger.With("trace_id", uuid.NewString()).Info("sending sms update event", "sms", sms)
+	logger.GetTracedLogger().Info("sending sms update event", "sms", sms)
 	return s.rabbit.Publish(body, constants.KeySMSUpdate)
 }
