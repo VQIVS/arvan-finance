@@ -1,9 +1,13 @@
 package user
 
 import (
+	invoiceDomain "billing-service/internal/invoice/domain"
+
+	invoiceRepo "billing-service/internal/invoice/port"
 	"billing-service/internal/user/domain"
 	"billing-service/internal/user/event"
 	"billing-service/internal/user/port"
+	userRepo "billing-service/internal/user/port"
 	"billing-service/pkg/adapters/rabbit"
 	"billing-service/pkg/constants"
 	"context"
@@ -18,25 +22,29 @@ var (
 	ErrUserOnCreate        = errors.New("error on creating new user")
 	ErrUserNotFound        = errors.New("user not found")
 	ErrInsufficientBalance = errors.New("insufficient balance for debit operation")
+	ErrInvalidCreditAmount = errors.New("invalid credit amount")
+	ErrInvoiceOnCreate     = errors.New("error on creating invoice")
 )
 
 type service struct {
-	repo   port.Repo
-	rabbit *rabbit.Rabbit
-	logger *slog.Logger
-	mu     sync.Mutex
+	userRepo    userRepo.Repo
+	invoiceRepo invoiceRepo.Repo
+	rabbit      *rabbit.Rabbit
+	logger      *slog.Logger
+	mu          sync.Mutex
 }
 
-func NewService(repo port.Repo, rabbit *rabbit.Rabbit) port.Service {
+func NewService(userRepo userRepo.Repo, invoiceRepo invoiceRepo.Repo, rabbit *rabbit.Rabbit) port.Service {
 	return &service{
-		repo:   repo,
-		rabbit: rabbit,
-		logger: slog.Default(),
+		userRepo:    userRepo,
+		invoiceRepo: invoiceRepo,
+		rabbit:      rabbit,
+		logger:      slog.Default(),
 	}
 }
 
 func (s *service) CreateUser(ctx context.Context, user domain.User) (domain.APIKey, error) {
-	apiKey, err := s.repo.Create(ctx, user)
+	apiKey, err := s.userRepo.Create(ctx, user)
 	if err != nil {
 		return "", err
 	}
@@ -44,7 +52,7 @@ func (s *service) CreateUser(ctx context.Context, user domain.User) (domain.APIK
 }
 
 func (s *service) GetUserByID(ctx context.Context, ID domain.UserID) (domain.User, error) {
-	user, err := s.repo.GetByID(ctx, uint(ID))
+	user, err := s.userRepo.GetByID(ctx, uint(ID))
 	if err != nil {
 		return domain.User{}, ErrUserNotFound
 	}
@@ -59,16 +67,25 @@ func (s *service) CreditUserBalance(ctx context.Context, ID domain.UserID, amoun
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	user, err := s.repo.GetByID(ctx, uint(ID))
+	user, err := s.userRepo.GetByID(ctx, uint(ID))
 	if err != nil {
 		return ErrUserNotFound
 	}
 
 	user.Balance += amount
 
-	err = s.repo.UpdateUserBalance(ctx, ID, user.Balance)
+	err = s.userRepo.UpdateUserBalance(ctx, ID, user.Balance)
 	if err != nil {
 		return err
+	}
+	err = s.invoiceRepo.Create(ctx, &invoiceDomain.Invoice{
+		UserID: uint(ID),
+		Amount: amount,
+		Type:   string(invoiceDomain.InvoiceTypeCredit),
+		Status: string(invoiceDomain.InvoiceStatusCompleted),
+	})
+	if err != nil {
+		return ErrInvoiceOnCreate
 	}
 	return nil
 }
@@ -85,17 +102,18 @@ func (s *service) DebitUserBalance(ctx context.Context, body []byte) (event.SMSU
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	user, err := s.repo.GetByID(ctx, msg.UserID)
+	user, err := s.userRepo.GetByID(ctx, msg.UserID)
 	if err != nil {
 		return event.SMSUpdateEvent{}, ErrUserNotFound
 	}
 	if user.Balance < msg.Amount {
 		return event.SMSUpdateEvent{}, ErrInsufficientBalance
 	}
-	err = s.repo.UpdateUserBalance(ctx, domain.UserID(msg.UserID), user.Balance-msg.Amount)
+	err = s.userRepo.UpdateUserBalance(ctx, domain.UserID(msg.UserID), user.Balance-msg.Amount)
 	if err != nil {
 		return event.SMSUpdateEvent{}, err
 	}
+
 	return event.SMSUpdateEvent{
 		Domain: event.SMS,
 		SMSID:  msg.SMSID,
@@ -111,7 +129,7 @@ func (s *service) UnsuccessfulSMS(ctx context.Context, body []byte) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	user, err := s.repo.GetByID(ctx, msg.UserID)
+	user, err := s.userRepo.GetByID(ctx, msg.UserID)
 	if err != nil {
 		return ErrUserNotFound
 	}
@@ -120,7 +138,7 @@ func (s *service) UnsuccessfulSMS(ctx context.Context, body []byte) error {
 		return errors.New("invalid SMS amount")
 	}
 
-	err = s.repo.UpdateUserBalance(ctx, domain.UserID(msg.UserID), user.Balance+msg.Amount)
+	err = s.userRepo.UpdateUserBalance(ctx, domain.UserID(msg.UserID), user.Balance+msg.Amount)
 	if err != nil {
 		return err
 	}
