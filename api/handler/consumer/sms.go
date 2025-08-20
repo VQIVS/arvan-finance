@@ -2,6 +2,7 @@ package consumer
 
 import (
 	"billing-service/app"
+	"billing-service/pkg/adapters/rabbit"
 	"billing-service/pkg/constants"
 	"context"
 )
@@ -19,8 +20,11 @@ func (h *Handler) Start(ctx context.Context) error {
 		h.app.Logger().Info("no rabbit configured, consumer won't start")
 		return nil
 	}
+
+	queue := rabbit.GetQueueName(constants.KeyBalanceUpdate)
 	svc := h.app.UserService(context.Background())
-	if err := h.app.Rabbit().Consume(constants.QueueUserBalanceUpdate, func(b []byte) error {
+
+	if err := h.app.Rabbit().Consume(queue, func(b []byte) error {
 		sms, err := svc.DebitUserBalance(context.Background(), b)
 		svc.UpdateSMSStatus(context.Background(), sms)
 		if err != nil {
@@ -34,7 +38,7 @@ func (h *Handler) Start(ctx context.Context) error {
 	}
 
 	<-ctx.Done()
-	h.app.Rabbit().Close()
+	// h.app.Rabbit().Close()
 	h.app.Logger().Info("consumer stopped")
 	return nil
 }

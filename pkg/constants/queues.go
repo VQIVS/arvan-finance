@@ -1,6 +1,7 @@
 package constants
 
 const (
-	QueueSMSUpdate         = "finance.sms.update"
-	QueueUserBalanceUpdate = "sms.user.balance.update"
+	//service.object.action
+	KeySMSUpdate     = "finance.balance.update"
+	KeyBalanceUpdate = "sms.status.update"
 )

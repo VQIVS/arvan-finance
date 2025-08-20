@@ -6,6 +6,7 @@ import (
 	userPort "billing-service/internal/user/port"
 	"billing-service/pkg/adapters/rabbit"
 	"billing-service/pkg/adapters/storage"
+	"billing-service/pkg/constants"
 	"billing-service/pkg/logger"
 	"billing-service/pkg/postgres"
 	"context"
@@ -80,7 +81,7 @@ func NewApp(cfg config.Config) (App, error) {
 			return nil, err
 		}
 		a.rabbit = r
-		if err := a.rabbit.InitQueues(cfg.Rabbit.Queues); err != nil {
+		if err := a.rabbit.InitQueues(constants.KeySMSUpdate); err != nil {
 			return nil, err
 		}
 	}

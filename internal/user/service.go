@@ -133,5 +133,5 @@ func (s *service) UpdateSMSStatus(ctx context.Context, sms event.SMSUpdateEvent)
 		return err
 	}
 	s.logger.Info("sending sms update event", "sms", sms)
-	return s.rabbit.Publish(body, constants.QueueSMSUpdate)
+	return s.rabbit.Publish(body, constants.KeySMSUpdate)
 }

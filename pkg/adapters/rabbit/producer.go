@@ -8,7 +8,7 @@ import (
 
 func (r *Rabbit) Publish(Body []byte, Q string) error {
 	pubErr := r.Ch.Publish(
-		"",
+		"amq.topic",
 		Q,
 		false,
 		false,

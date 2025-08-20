@@ -1,7 +1,7 @@
 package rabbit
 
 import (
-	"billing-service/config"
+	"billing-service/pkg/constants"
 	"billing-service/pkg/logger"
 	"log/slog"
 
@@ -42,22 +42,29 @@ func (r *Rabbit) Close() {
 	}
 }
 
-func (r *Rabbit) InitQueues(queues []config.QueueConfig) error {
+func (r *Rabbit) InitQueues(queue string) error {
 	if r == nil || r.Ch == nil {
 		return nil
 	}
-	for _, q := range queues {
-		_, err := r.Ch.QueueDeclare(
-			q.Name,
-			q.Durable,
-			false,
-			false,
-			false,
-			nil,
-		)
-		if err != nil {
-			return err
-		}
+	queueName := GetQueueName(constants.KeyBalanceUpdate)
+	_, err := r.Ch.QueueDeclare(
+		queueName,
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		return err
+	}
+	err = r.Ch.QueueBind(queueName, constants.KeyBalanceUpdate, "amq.topic", false, nil)
+	if err != nil {
+		return err
 	}
 	return nil
+}
+
+func GetQueueName(key string) string {
+	return "finance_" + key
 }

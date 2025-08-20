@@ -120,10 +120,10 @@ func (s *testUserService) UpdateSMSStatus(ctx context.Context, sms event.SMSUpda
 		return err
 	}
 
-	if _, exists := s.mockQueue[constants.QueueSMSUpdate]; !exists {
-		s.mockQueue[constants.QueueSMSUpdate] = make([][]byte, 0)
+	if _, exists := s.mockQueue[constants.KeySMSUpdate]; !exists {
+		s.mockQueue[constants.KeySMSUpdate] = make([][]byte, 0)
 	}
-	s.mockQueue[constants.QueueSMSUpdate] = append(s.mockQueue[constants.QueueSMSUpdate], body)
+	s.mockQueue[constants.KeySMSUpdate] = append(s.mockQueue[constants.KeySMSUpdate], body)
 
 	return nil
 }
@@ -586,7 +586,7 @@ func TestUpdateSMSStatus(t *testing.T) {
 				Domain: event.SMS,
 			},
 			expectedError: false,
-			expectedQueue: constants.QueueSMSUpdate,
+			expectedQueue: constants.KeySMSUpdate,
 		},
 	}
 
