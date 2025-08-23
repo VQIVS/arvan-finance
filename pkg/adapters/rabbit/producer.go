@@ -9,7 +9,7 @@ import (
 
 func (r *Rabbit) Publish(Body []byte, Q string) error {
 	pubErr := r.Ch.Publish(
-		constants.Exchange,
+		constants.TopicExchange,
 		Q,
 		false,
 		false,

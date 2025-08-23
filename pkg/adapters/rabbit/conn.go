@@ -1,7 +1,6 @@
 package rabbit
 
 import (
-	"billing-service/pkg/constants"
 	"billing-service/pkg/logger"
 	"log/slog"
 
@@ -42,14 +41,27 @@ func (r *Rabbit) Close() {
 	}
 }
 
-func (r *Rabbit) InitQueues(queue string) error {
+func (r *Rabbit) InitQueues(keys []string, exchnage string) error {
 	if r == nil || r.Ch == nil {
 		return nil
 	}
-	queueName := GetQueueName(constants.KeyBalanceUpdate)
-	_, err := r.Ch.QueueDeclare(
-		queueName,
-		true,
+	for _, key := range keys {
+		err := r.declareBind(exchnage, key, true)
+		if err != nil {
+			r.Logger.Error("failed to declare and bind queue", "key", key, "error", err)
+		}
+		r.Logger.Info("queue declared and bound", "key", key)
+	}
+	return nil
+}
+
+func (r *Rabbit) declareBind(exchange string, routingKey string, durable bool) error {
+	if r == nil || r.Ch == nil {
+		return nil
+	}
+	q, err := r.Ch.QueueDeclare(
+		GetQueueName(routingKey),
+		durable,
 		false,
 		false,
 		false,
@@ -58,13 +70,11 @@ func (r *Rabbit) InitQueues(queue string) error {
 	if err != nil {
 		return err
 	}
-	err = r.Ch.QueueBind(queueName, constants.KeyBalanceUpdate, constants.Exchange, false, nil)
+
+	err = r.Ch.QueueBind(q.Name, routingKey, exchange, false, nil)
 	if err != nil {
 		return err
 	}
-	return nil
-}
 
-func GetQueueName(key string) string {
-	return "finance_" + key
+	return nil
 }
