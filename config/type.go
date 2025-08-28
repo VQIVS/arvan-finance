@@ -3,9 +3,7 @@ package config
 type Config struct {
 	DB     DBConfig     `json:"db"`
 	Server ServerConfig `json:"server"`
-	Redis  RedisConfig  `json:"redis"`
 	Rabbit RabbitConfig `json:"rabbit"`
-	SmsFee float64      `json:"sms_fee"`
 }
 
 type DBConfig struct {
