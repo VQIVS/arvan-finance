@@ -141,5 +141,5 @@ func (s *service) UpdateSMSStatus(ctx context.Context, sms event.SMSUpdateEvent)
 		return err
 	}
 	logger.GetTracedLogger().Info("sending sms update event", "sms", sms)
-	return s.rabbit.Publish(body, constants.KeySMSUpdate)
+	return s.rabbit.Publish(constants.KeySMSUpdate, constants.TopicExchange, body)
 }

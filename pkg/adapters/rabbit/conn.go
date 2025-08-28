@@ -1,7 +1,9 @@
 package rabbit
 
 import (
+	"billing-service/pkg/constants"
 	"billing-service/pkg/logger"
+	"fmt"
 	"log/slog"
 
 	"github.com/streadway/amqp"
@@ -20,7 +22,7 @@ func NewRabbit(url string, customLogger *slog.Logger) (*Rabbit, error) {
 	}
 	ch, err := conn.Channel()
 	if err != nil {
-		_ = conn.Close() // Ignore close error, prioritize original error
+		_ = conn.Close()
 		return nil, err
 	}
 
@@ -32,49 +34,45 @@ func NewRabbit(url string, customLogger *slog.Logger) (*Rabbit, error) {
 	return &Rabbit{Conn: conn, Ch: ch, Logger: log}, nil
 }
 
-func (r *Rabbit) Close() {
+func (r *Rabbit) Close() error {
 	if r.Ch != nil {
-		_ = r.Ch.Close()
+		if err := r.Ch.Close(); err != nil {
+			return err
+		}
 	}
 	if r.Conn != nil {
-		_ = r.Conn.Close()
+		return r.Conn.Close()
 	}
+	return nil
 }
 
-func (r *Rabbit) InitQueues(keys []string, exchnage string) error {
+func (r *Rabbit) InitQueues(keys []string) error {
 	if r == nil || r.Ch == nil {
 		return nil
 	}
-	for _, key := range keys {
-		err := r.declareBind(exchnage, key, true)
+
+	for _, queue := range keys {
+		queueName := GetQueueName(queue)
+		_, err := r.Ch.QueueDeclare(
+			queueName,
+			true,
+			false,
+			false,
+			false,
+			nil,
+		)
 		if err != nil {
-			r.Logger.Error("failed to declare and bind queue", "key", key, "error", err)
+			return fmt.Errorf("failed to declare queue %s: %w", queueName, err)
 		}
-		r.Logger.Info("queue declared and bound", "key", key)
+
+		if err := r.Ch.QueueBind(queueName, constants.KeySMSUpdate, constants.TopicExchange, false, nil); err != nil {
+			return fmt.Errorf("failed to bind queue %s: %w", queueName, err)
+		}
 	}
+
 	return nil
 }
 
-func (r *Rabbit) declareBind(exchange string, routingKey string, durable bool) error {
-	if r == nil || r.Ch == nil {
-		return nil
-	}
-	q, err := r.Ch.QueueDeclare(
-		GetQueueName(routingKey),
-		durable,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		return err
-	}
-
-	err = r.Ch.QueueBind(q.Name, routingKey, exchange, false, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+func GetQueueName(key string) string {
+	return constants.ServiceName + "_" + key
 }

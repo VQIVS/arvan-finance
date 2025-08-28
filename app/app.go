@@ -90,7 +90,7 @@ func NewApp(cfg config.Config) (App, error) {
 			return nil, err
 		}
 		a.rabbit = r
-		if err := a.rabbit.InitQueues([]string{constants.KeyBalanceUpdate}, constants.TopicExchange); err != nil {
+		if err := a.rabbit.InitQueues([]string{constants.KeyBalanceUpdate}); err != nil {
 			return nil, err
 		}
 	}
