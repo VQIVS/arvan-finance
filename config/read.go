@@ -1,18 +1,19 @@
 package config
 
 import (
-	"encoding/json"
 	"os"
+
+	"gopkg.in/yaml.v3"
 )
 
 func ReadConfig(configPath string) (Config, error) {
 	var c Config
-	all, err := os.ReadFile(configPath)
+	data, err := os.ReadFile(configPath)
 	if err != nil {
 		return c, err
 	}
 
-	return c, json.Unmarshal(all, &c)
+	return c, yaml.Unmarshal(data, &c)
 }
 
 func MustReadConfig(configPath string) Config {

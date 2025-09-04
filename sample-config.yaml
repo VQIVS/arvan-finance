@@ -1,0 +1,24 @@
+server:
+  host: "localhost"
+  port: 8080
+
+
+database:
+  host: "localhost"
+  port: 5433
+  username: "postgres"
+  password: "postgres"
+  database: "sms"
+
+rabbitmq:
+  uri: "amqp://guest:guest@localhost:5672/"
+  queues:
+    - name: "sms_debit_queue"
+      exchange: "amq.topic"
+      routing: "sms.debit.balance"
+    - name: "sms_refund_queue"
+      exchange: "amq.topic"
+      routing: "sms.refund.balance"
+    - name: "sms_delivered_queue"
+      exchange: "amq.topic"
+      routing: "sms.delivered"

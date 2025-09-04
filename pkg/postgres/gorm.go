@@ -1,7 +1,6 @@
 package postgres
 
 import (
-	"billing-service/pkg/adapters/storage/types"
 	"fmt"
 
 	"gorm.io/driver/postgres"
@@ -33,10 +32,6 @@ func NewPsqlGormConnection(opt DBConnOptions) (*gorm.DB, error) {
 	})
 }
 
-func Migrate(db *gorm.DB) {
-	migrator := db.Migrator()
-	// storage models
-	if err := migrator.AutoMigrate(&types.User{}); err != nil {
-		panic("failed to auto-migrate User table: " + err.Error())
-	}
+func Migrate(db *gorm.DB, models ...interface{}) error {
+	return db.AutoMigrate(models...)
 }

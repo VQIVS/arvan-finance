@@ -1,45 +1,45 @@
 package logger
 
 import (
+	"context"
 	"log/slog"
 	"os"
-	"sync"
 
 	"github.com/google/uuid"
 )
 
-var (
-	instance *slog.Logger
-	once     sync.Once
-)
+type LogLevel string
 
-func NewLogger() *slog.Logger {
-	return slog.New(slog.NewJSONHandler(os.Stdout, nil))
+type contextKey string
+
+const TraceIDKey contextKey = "trace_id"
+
+type Logger struct {
+	*slog.Logger
 }
 
-func GetLogger() *slog.Logger {
-	once.Do(func() {
-		instance = NewLogger()
-	})
-	return instance
+func NewLogger(level LogLevel) *Logger {
+	return &Logger{
+		Logger: slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+			Level: slog.LevelInfo, // default log level
+		})),
+	}
 }
 
-func SetLogger(logger *slog.Logger) {
-	instance = logger
+func GenerateTraceID() string {
+	return uuid.New().String()
 }
 
-func WithTraceID(logger *slog.Logger, traceID string) *slog.Logger {
-	return logger.With("trace_id", traceID)
+func WithTraceID(ctx context.Context) context.Context {
+	if ctx.Value(TraceIDKey) == nil {
+		return context.WithValue(ctx, TraceIDKey, GenerateTraceID())
+	}
+	return ctx
 }
 
-func NewTracedLogger(traceID string) *slog.Logger {
-	return GetLogger().With("trace_id", traceID)
-}
-
-func NewAutoTracedLogger() *slog.Logger {
-	return GetLogger().With("trace_id", uuid.NewString())
-}
-
-func GetTracedLogger() *slog.Logger {
-	return NewAutoTracedLogger()
+func GetTraceID(ctx context.Context) string {
+	if traceID, ok := ctx.Value(TraceIDKey).(string); ok {
+		return traceID
+	}
+	return ""
 }
