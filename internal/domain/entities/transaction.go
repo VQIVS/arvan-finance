@@ -37,15 +37,14 @@ type TxRepo interface {
 	BeginDbTx() *gorm.DB
 }
 type Transaction struct {
-	ID          uuid.UUID          `json:"id"`
-	WalletID    uuid.UUID          `json:"wallet_id"`
-	UserID      uuid.UUID          `json:"user_id"`
-	Amount      valueobjects.Money `json:"amount"`
-	Type        TransactionType    `json:"type"`
-	Status      TransactionStatus  `json:"status"`
-	Description string             `json:"description"`
-	CreatedAt   time.Time          `json:"created_at"`
-	UpdatedAt   time.Time          `json:"updated_at"`
+	ID        uuid.UUID          `json:"id"`
+	WalletID  uuid.UUID          `json:"wallet_id"`
+	UserID    uuid.UUID          `json:"user_id"`
+	Amount    valueobjects.Money `json:"amount"`
+	Type      TransactionType    `json:"type"`
+	Status    TransactionStatus  `json:"status"`
+	CreatedAt time.Time          `json:"created_at"`
+	UpdatedAt time.Time          `json:"updated_at"`
 }
 
 func NewTransaction(walletID, userID uuid.UUID, amount valueobjects.Money, txType TransactionType) *Transaction {
