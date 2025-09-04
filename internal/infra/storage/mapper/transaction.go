@@ -1,0 +1,51 @@
+package mapper
+
+import (
+	"finance/internal/domain/entities"
+	"finance/internal/domain/valueobjects"
+	"finance/internal/infra/storage/types"
+	"math/big"
+)
+
+func moneyDomain2Storage(money valueobjects.Money) types.Money {
+	return types.Money{
+		Amount:   big.NewInt(money.Amount().Int64()),
+		Currency: money.Currency(),
+	}
+}
+
+func moneyStorage2Domain(money types.Money) (valueobjects.Money, error) {
+	m, err := valueobjects.NewMoney(big.NewInt(money.Amount.Int64()), money.Currency)
+	if err != nil {
+		return valueobjects.Money{}, err
+	}
+	return m, nil
+}
+
+func TxStorage2Domain(tx types.Transaction) (*entities.Transaction, error) {
+	amount, err := moneyStorage2Domain(tx.Amount)
+	if err != nil {
+		return nil, err
+	}
+	return &entities.Transaction{
+		ID:        tx.ID,
+		WalletID:  tx.Wallet.ID,
+		UserID:    tx.User.ID,
+		Amount:    amount,
+		Type:      entities.TransactionType(tx.Type),
+		Status:    entities.TransactionStatus(tx.Status),
+		CreatedAt: tx.CreatedAt,
+		UpdatedAt: tx.UpdatedAt,
+	}, nil
+}
+
+func TxDomain2Storage(tx *entities.Transaction) types.Transaction {
+	return types.Transaction{
+		Base:     types.Base{ID: tx.ID, CreatedAt: tx.CreatedAt, UpdatedAt: tx.UpdatedAt},
+		WalletID: tx.WalletID.String(),
+		UserID:   tx.UserID.String(),
+		Amount:   moneyDomain2Storage(tx.Amount),
+		Type:     string(tx.Type),
+		Status:   string(tx.Status),
+	}
+}
