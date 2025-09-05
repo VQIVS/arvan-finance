@@ -1,6 +1,10 @@
 package types
 
-import "math/big"
+import (
+	"math/big"
+
+	"github.com/google/uuid"
+)
 
 type Money struct {
 	Amount   *big.Int
@@ -8,11 +12,12 @@ type Money struct {
 }
 type Transaction struct {
 	Base
-	WalletID string
+	WalletID uuid.UUID
 	Wallet   *Wallet
-	UserID   string
+	UserID   uuid.UUID
 	User     *User
 	Amount   Money
 	Type     string
 	Status   string
+	SMSID    uuid.UUID
 }

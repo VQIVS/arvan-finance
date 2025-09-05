@@ -35,6 +35,7 @@ func TxStorage2Domain(tx types.Transaction) (*entities.Transaction, error) {
 		Amount:    amount,
 		Type:      entities.TransactionType(tx.Type),
 		Status:    entities.TransactionStatus(tx.Status),
+		SMSID:     tx.SMSID,
 		CreatedAt: tx.CreatedAt,
 		UpdatedAt: tx.UpdatedAt,
 	}, nil
@@ -43,10 +44,11 @@ func TxStorage2Domain(tx types.Transaction) (*entities.Transaction, error) {
 func TxDomain2Storage(tx *entities.Transaction) types.Transaction {
 	return types.Transaction{
 		Base:     types.Base{ID: tx.ID, CreatedAt: tx.CreatedAt, UpdatedAt: tx.UpdatedAt},
-		WalletID: tx.WalletID.String(),
-		UserID:   tx.UserID.String(),
+		WalletID: tx.WalletID,
+		UserID:   tx.UserID,
 		Amount:   moneyDomain2Storage(tx.Amount),
 		Type:     string(tx.Type),
 		Status:   string(tx.Status),
+		SMSID:    tx.SMSID,
 	}
 }

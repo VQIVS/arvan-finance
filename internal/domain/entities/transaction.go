@@ -44,6 +44,7 @@ type Transaction struct {
 	Amount    valueobjects.Money `json:"amount"`
 	Type      TransactionType    `json:"type"`
 	Status    TransactionStatus  `json:"status"`
+	SMSID     uuid.UUID          `json:"sms_id"`
 	CreatedAt time.Time          `json:"created_at"`
 	UpdatedAt time.Time          `json:"updated_at"`
 }
