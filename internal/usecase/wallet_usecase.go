@@ -3,9 +3,11 @@ package usecase
 import (
 	"context"
 	"finance/internal/domain/entities"
+	"finance/internal/domain/events"
 	"finance/internal/domain/valueobjects"
 	"finance/internal/infra/storage"
 	"math/big"
+	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -16,17 +18,24 @@ type WalletService struct {
 	UserRepo        entities.UserRepo
 	TransactionRepo entities.TransactionRepo
 	TxManager       storage.TransactionManager
+	Publisher       events.Publisher
 }
 
-func NewWalletService(walletRepo entities.WalletRepo, userRepo entities.UserRepo, txRepo entities.TransactionRepo, txManager storage.TransactionManager) *WalletService {
+func NewWalletService(walletRepo entities.WalletRepo,
+	userRepo entities.UserRepo,
+	txRepo entities.TransactionRepo,
+	txManager storage.TransactionManager,
+	publisher events.Publisher) *WalletService {
 	return &WalletService{
 		WalletRepo:      walletRepo,
 		UserRepo:        userRepo,
 		TransactionRepo: txRepo,
 		TxManager:       txManager,
+		Publisher:       publisher,
 	}
 }
 
+// consumer handler calls this usecase
 func (s *WalletService) DebitUserbalance(ctx context.Context, userID uuid.UUID, amount big.Int) error {
 	return s.withTransaction(func(walletRepo entities.WalletRepo, txRepo entities.TransactionRepo, userRepo entities.UserRepo) error {
 		wallet, err := walletRepo.FindByUserID(ctx, userID)
@@ -59,12 +68,19 @@ func (s *WalletService) DebitUserbalance(ctx context.Context, userID uuid.UUID, 
 		if err := txRepo.UpdateStatus(ctx, transaction, entities.TransactionCompleted); err != nil {
 			return err
 		}
+		msg := events.SMSDebited{
+			UserID:        userID.String(),
+			SMSID:         transaction.SMSID.String(),
+			Amount:        *transaction.Amount.Amount(),
+			TransactionID: transaction.ID.String(),
+			TimeStamp:     time.Now(),
+		}
 
-		// add publisher here to publish tx completed event
-		return nil
+		return s.Publisher.PublishEvent(ctx, &msg)
 	})
 }
 
+// http handler calls this usecase
 func (s *WalletService) CreditUserBalance(ctx context.Context, userID uuid.UUID, amount big.Int) error {
 	return s.withTransaction(func(walletRepo entities.WalletRepo, txRepo entities.TransactionRepo, userRepo entities.UserRepo) error {
 		wallet, err := walletRepo.FindByUserID(ctx, userID)
@@ -101,6 +117,7 @@ func (s *WalletService) CreditUserBalance(ctx context.Context, userID uuid.UUID,
 	})
 }
 
+// this usecase executes in a subsciber handler
 func (s *WalletService) RefundTransaction(ctx context.Context, txID string) error {
 	return s.withTransaction(func(walletRepo entities.WalletRepo, txRepo entities.TransactionRepo, userRepo entities.UserRepo) error {
 		originalTx, err := txRepo.FindByID(ctx, txID)
@@ -137,8 +154,6 @@ func (s *WalletService) RefundTransaction(ctx context.Context, txID string) erro
 		if err := txRepo.UpdateStatus(ctx, refundTx, entities.TransactionCompleted); err != nil {
 			return err
 		}
-
-		// add publisher here to publish tx completed event
 		return nil
 	})
 }
