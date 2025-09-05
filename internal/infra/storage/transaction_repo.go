@@ -13,7 +13,7 @@ type TransactionRepo struct {
 	Db *gorm.DB
 }
 
-func NewTransactionRepo(db *gorm.DB) entities.TxRepo {
+func NewTransactionRepo(db *gorm.DB) entities.TransactionRepo {
 	return &TransactionRepo{
 		Db: db,
 	}
@@ -44,4 +44,10 @@ func (r *TransactionRepo) UpdateStatus(ctx context.Context, tx *entities.Transac
 
 func (r *TransactionRepo) BeginDbTx() *gorm.DB {
 	return r.Db.Begin()
+}
+
+func (r *TransactionRepo) WithTx(tx *gorm.DB) entities.TransactionRepo {
+	return &TransactionRepo{
+		Db: tx,
+	}
 }

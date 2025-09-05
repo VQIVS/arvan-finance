@@ -28,3 +28,9 @@ func (r *UserRepository) GetByID(ctx context.Context, ID uuid.UUID) (*entities.U
 	user := mapper.UserStorage2Domain(model)
 	return user, nil
 }
+
+func (r *UserRepository) WithTx(tx *gorm.DB) entities.UserRepo {
+	return &UserRepository{
+		Db: tx,
+	}
+}

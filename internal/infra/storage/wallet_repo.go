@@ -51,5 +51,14 @@ func (r *WalletRepository) FindByUserID(ctx context.Context, userID uuid.UUID) (
 
 func (r *WalletRepository) UpdateBalance(ctx context.Context, wallet *entities.Wallet) error {
 	model := mapper.WalletDomain2Storage(wallet)
+	var lockModel types.Wallet
+	if err := r.Db.WithContext(ctx).Set("gorm:query_option", "FOR UPDATE").First(&lockModel, "id = ?", model.ID).Error; err != nil {
+		return err
+	}
+
 	return r.Db.WithContext(ctx).Model(&model).Update("balance", model.Balance).Error
+}
+
+func (r *WalletRepository) WithTx(tx *gorm.DB) entities.WalletRepo {
+	return NewWalletRepository(tx)
 }

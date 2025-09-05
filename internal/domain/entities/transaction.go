@@ -29,13 +29,13 @@ const (
 	TransactionCredit TransactionType = "credit"
 )
 
-type TxRepo interface {
+type TransactionRepo interface {
 	Create(ctx context.Context, tx *Transaction) error
 	FindByID(ctx context.Context, id string) (*Transaction, error)
 	UpdateStatus(ctx context.Context, tx *Transaction, status TransactionStatus) error
+	WithTx(tx *gorm.DB) TransactionRepo
 
 	//TODO: check the propper way to handle transactions in gorm
-	BeginDbTx() *gorm.DB
 }
 type Transaction struct {
 	ID        uuid.UUID          `json:"id"`

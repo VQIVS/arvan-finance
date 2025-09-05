@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 var (
@@ -22,7 +23,10 @@ type WalletRepo interface {
 	Save(ctx context.Context, wallet *Wallet) error
 	FindByID(ctx context.Context, ID uuid.UUID) (*Wallet, error)
 	FindByUserID(ctx context.Context, userID uuid.UUID) (*Wallet, error)
+
+	// uses db layer lock
 	UpdateBalance(ctx context.Context, wallet *Wallet) error
+	WithTx(tx *gorm.DB) WalletRepo
 }
 
 type Wallet struct {

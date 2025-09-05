@@ -5,10 +5,12 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type UserRepo interface {
 	GetByID(ctx context.Context, ID uuid.UUID) (*User, error)
+	WithTx(tx *gorm.DB) UserRepo
 }
 
 type User struct {
