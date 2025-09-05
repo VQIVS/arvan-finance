@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"context"
 	"errors"
 	"finance/internal/domain/valueobjects"
 	"fmt"
@@ -18,14 +19,14 @@ var (
 )
 
 type WalletRepo interface {
-	Save(wallet *Wallet) error
-	FindByID(id string) (*Wallet, error)
-	FindByUserID(userID string) (*Wallet, error)
-	UpdateBalance(wallet *Wallet) error
+	Save(ctx context.Context, wallet *Wallet) error
+	FindByID(ctx context.Context, ID uuid.UUID) (*Wallet, error)
+	FindByUserID(ctx context.Context, userID uuid.UUID) (*Wallet, error)
+	UpdateBalance(ctx context.Context, wallet *Wallet) error
 }
 
 type Wallet struct {
-	ID        string
+	ID        uuid.UUID
 	UserID    string
 	Balance   valueobjects.Money
 	Currency  string
@@ -39,7 +40,7 @@ func NewWallet(userID uuid.UUID, currency string) (*Wallet, error) {
 		return nil, err
 	}
 	return &Wallet{
-		ID:        uuid.New().String(),
+		ID:        uuid.New(),
 		UserID:    userID.String(),
 		Balance:   zeroAmount,
 		Currency:  currency,
