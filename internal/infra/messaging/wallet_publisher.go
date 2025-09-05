@@ -13,6 +13,7 @@ const (
 
 type WalletPublisher struct {
 	publisher *rabbit.Publisher
+	// TODO: add logger here
 }
 
 func NewWalletPublisher(conn *rabbit.RabbitConn) *WalletPublisher {
