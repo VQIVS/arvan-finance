@@ -7,6 +7,7 @@ import (
 	"math/big"
 )
 
+// TODO: fix BASE
 func moneyDomain2Storage(money valueobjects.Money) types.Money {
 	return types.Money{
 		Amount:   big.NewInt(money.Amount().Int64()),
