@@ -27,7 +27,7 @@ type WalletRepo interface {
 
 type Wallet struct {
 	ID        uuid.UUID
-	UserID    string
+	UserID    uuid.UUID
 	Balance   valueobjects.Money
 	Currency  string
 	CreatedAt time.Time
@@ -41,7 +41,7 @@ func NewWallet(userID uuid.UUID, currency string) (*Wallet, error) {
 	}
 	return &Wallet{
 		ID:        uuid.New(),
-		UserID:    userID.String(),
+		UserID:    userID,
 		Balance:   zeroAmount,
 		Currency:  currency,
 		CreatedAt: time.Now(),
@@ -68,6 +68,10 @@ func (w *Wallet) HasSufficientBalance(amount valueobjects.Money) error {
 }
 
 func (w *Wallet) Debit(amount valueobjects.Money) error {
+	if w == nil {
+		return ErrWalletNotFound
+	}
+
 	if amount.IsZero() || amount.IsNegative() {
 		return ErrInvalidAmount
 	}
@@ -83,6 +87,30 @@ func (w *Wallet) Debit(amount valueobjects.Money) error {
 
 	if newBalance.IsNegative() {
 		return ErrNegativeBalance
+	}
+
+	w.Balance = newBalance
+	w.UpdatedAt = time.Now()
+	return nil
+}
+
+func (w *Wallet) Credit(amount valueobjects.Money) error {
+	if w == nil {
+		return ErrWalletNotFound
+	}
+
+	if amount.IsZero() || amount.IsNegative() {
+		return ErrInvalidAmount
+	}
+
+	if w.Balance.Currency() != amount.Currency() {
+		return fmt.Errorf("currency mismatch: wallet has %s, crediting %s",
+			w.Balance.Currency(), amount.Currency())
+	}
+
+	newBalance, err := w.Balance.Add(amount)
+	if err != nil {
+		return fmt.Errorf("credit calculation failed: %w", err)
 	}
 
 	w.Balance = newBalance

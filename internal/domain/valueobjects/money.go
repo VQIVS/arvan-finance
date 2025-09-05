@@ -7,7 +7,8 @@ import (
 )
 
 var (
-	ErrNegativeBalance = errors.New("operation would result in negative balance")
+	ErrNegativeBalance  = errors.New("operation would result in negative balance")
+	ErrCurrencyMismatch = errors.New("currency mismatch")
 )
 
 type Money struct {
@@ -55,6 +56,15 @@ func (m Money) Subtract(other Money) (Money, error) {
 		return Money{}, ErrNegativeBalance
 	}
 
+	return Money{amount: result, currency: m.currency}, nil
+}
+
+func (m Money) Add(other Money) (Money, error) {
+	if m.currency != other.currency {
+		return Money{}, ErrCurrencyMismatch
+	}
+
+	result := new(big.Int).Add(m.amount, other.amount)
 	return Money{amount: result, currency: m.currency}, nil
 }
 
