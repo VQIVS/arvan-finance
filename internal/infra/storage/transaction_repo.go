@@ -26,7 +26,7 @@ func (r *TransactionRepo) Create(ctx context.Context, tx *entities.Transaction) 
 
 func (r *TransactionRepo) FindByID(ctx context.Context, id string) (*entities.Transaction, error) {
 	var model types.Transaction
-	if err := r.Db.WithContext(ctx).Preload("Wallet").Preload("User").First(&model, "id = ?", id).Error; err != nil {
+	if err := r.Db.WithContext(ctx).First(&model, "id = ?", id).Error; err != nil {
 		return nil, err
 	}
 	tx, err := mapper.TxStorage2Domain(model)
