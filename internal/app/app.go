@@ -7,6 +7,7 @@ import (
 	"finance/internal/infra/storage"
 	"finance/internal/infra/storage/types"
 	"finance/internal/usecase"
+	"finance/pkg/logger"
 	"finance/pkg/postgres"
 	"finance/pkg/rabbit"
 
@@ -18,6 +19,7 @@ type app struct {
 	cfg           config.Config
 	rabbitConn    *rabbit.RabbitConn
 	walletService *usecase.WalletService
+	logger        *logger.Logger
 }
 
 func (a *app) Config() config.Config {
@@ -38,7 +40,8 @@ func (a *app) WalletService(ctx context.Context) *usecase.WalletService {
 
 func NewApp(cfg config.Config) (App, error) {
 	a := &app{
-		cfg: cfg,
+		cfg:    cfg,
+		logger: logger.NewLogger(""),
 	}
 	if err := a.setDB(); err != nil {
 		return nil, err
@@ -106,6 +109,6 @@ func (a *app) setWalletService(db *gorm.DB, rabbitConn *rabbit.RabbitConn) {
 	transactionRepo := storage.NewTransactionRepo(db)
 	userRepo := storage.NewUserRepository(db)
 	txManager := storage.NewGormTransactionManager(db)
-	walletPublisher := messaging.NewWalletPublisher(rabbitConn)
-	a.walletService = usecase.NewWalletService(walletRepo, userRepo, transactionRepo, txManager, walletPublisher)
+	walletPublisher := messaging.NewWalletPublisher(rabbitConn, a.logger)
+	a.walletService = usecase.NewWalletService(walletRepo, userRepo, transactionRepo, txManager, walletPublisher, a.logger)
 }

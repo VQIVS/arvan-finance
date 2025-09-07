@@ -1,8 +1,9 @@
 package rabbit
 
 import (
+	"context"
 	"encoding/json"
-	"log"
+	"finance/pkg/logger"
 
 	"github.com/streadway/amqp"
 )
@@ -58,6 +59,9 @@ func (c *Consumer) StartConsume() error {
 }
 
 func (c *Consumer) consumeFromQueue(queueName string, handler func([]byte) error) {
+	logger := logger.NewLogger("")
+	ctx := context.Background()
+
 	msgs, err := c.rabbitConn.Ch.Consume(
 		queueName,
 		"",
@@ -68,15 +72,16 @@ func (c *Consumer) consumeFromQueue(queueName string, handler func([]byte) error
 		nil,
 	)
 	if err != nil {
-		log.Printf("Failed to start consuming from %s: %v", queueName, err)
+		logger.Info(ctx, "Failed to start consuming from %s: %v", queueName, err)
 		return
 	}
-	log.Printf("Consumer started for queue: %s", queueName)
+	logger.Info(ctx, "Consumer started for queue: %s", queueName)
 
 	for msg := range msgs {
 		if err := handler(msg.Body); err != nil {
-			log.Printf("Error handling message in %s: %v", queueName, err)
-			msg.Nack(false, true)
+
+			logger.Info(ctx, "Error handling message in %s: %v", queueName, err)
+			msg.Nack(false, false)
 		} else {
 			msg.Ack(false)
 		}

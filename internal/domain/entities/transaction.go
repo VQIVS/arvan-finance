@@ -47,7 +47,7 @@ type Transaction struct {
 	UpdatedAt time.Time          `json:"updated_at"`
 }
 
-func NewTransaction(walletID, userID uuid.UUID, amount valueobjects.Money, txType TransactionType) *Transaction {
+func NewTransaction(walletID, userID, smsID uuid.UUID, amount valueobjects.Money, txType TransactionType) *Transaction {
 	tx := &Transaction{
 		ID:        uuid.New(),
 		WalletID:  walletID,
@@ -55,6 +55,7 @@ func NewTransaction(walletID, userID uuid.UUID, amount valueobjects.Money, txTyp
 		Amount:    amount,
 		Type:      txType,
 		Status:    TransactionPending,
+		SMSID:     smsID,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}

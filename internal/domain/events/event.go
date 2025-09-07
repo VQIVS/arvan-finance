@@ -2,7 +2,6 @@ package events
 
 import (
 	"context"
-	"math/big"
 	"time"
 )
 
@@ -23,14 +22,14 @@ type SMSEvent interface {
 	AggregateID() string
 }
 
-type DebitUserBalance struct {
+type RequestSMSBilling struct {
 	UserID    string    `json:"user_id"`
 	SMSID     string    `json:"sms_id"`
-	Amount    big.Int   `json:"amount"`
+	Amount    int64     `json:"amount"`
 	TimeStamp time.Time `json:"timestamp"`
 }
 
-type RefundTransaction struct {
+type RequestBillingRefund struct {
 	TransactionID string    `json:"transaction_id"`
 	TimeStamp     time.Time `json:"timestamp"`
 }
@@ -38,24 +37,24 @@ type RefundTransaction struct {
 type SMSDebited struct {
 	UserID        string    `json:"user_id"`
 	SMSID         string    `json:"sms_id"`
-	Amount        big.Int   `json:"amount"`
+	Amount        int64     `json:"amount"`
 	TransactionID string    `json:"transaction_id"`
 	TimeStamp     time.Time `json:"timestamp"`
 }
 
-func (e *DebitUserBalance) EventType() EventType {
+func (e *RequestSMSBilling) EventType() EventType {
 	return EventTypeDebit
 }
 
-func (e *DebitUserBalance) AggregateID() string {
+func (e *RequestSMSBilling) AggregateID() string {
 	return e.UserID
 }
 
-func (e *RefundTransaction) EventType() EventType {
+func (e *RequestBillingRefund) EventType() EventType {
 	return EventTypeRefund
 }
 
-func (e *RefundTransaction) AggregateID() string {
+func (e *RequestBillingRefund) AggregateID() string {
 	return e.TransactionID
 }
 

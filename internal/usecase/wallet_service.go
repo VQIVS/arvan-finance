@@ -6,6 +6,7 @@ import (
 	"finance/internal/domain/events"
 	"finance/internal/domain/valueobjects"
 	"finance/internal/infra/storage"
+	"finance/pkg/logger"
 	"math/big"
 	"time"
 
@@ -19,25 +20,29 @@ type WalletService struct {
 	TransactionRepo entities.TransactionRepo
 	TxManager       storage.TransactionManager
 	Publisher       events.Publisher
+	log             *logger.Logger
 }
 
 func NewWalletService(walletRepo entities.WalletRepo,
 	userRepo entities.UserRepo,
 	transactionRepo entities.TransactionRepo,
 	txManager storage.TransactionManager,
-	publisher events.Publisher) *WalletService {
+	publisher events.Publisher, log *logger.Logger) *WalletService {
 	return &WalletService{
 		WalletRepo:      walletRepo,
 		UserRepo:        userRepo,
 		TransactionRepo: transactionRepo,
 		TxManager:       txManager,
 		Publisher:       publisher,
+		log:             log,
 	}
 }
 
 // consumer handler calls this usecase
-func (s *WalletService) DebitUserbalance(ctx context.Context, userID uuid.UUID, amount big.Int) error {
-	return s.withTransaction(func(walletRepo entities.WalletRepo, txRepo entities.TransactionRepo, userRepo entities.UserRepo) error {
+func (s *WalletService) DebitUserbalance(ctx context.Context, userID, smsID uuid.UUID, amount big.Int) error {
+	var eventToPublish *events.SMSDebited
+
+	err := s.withTransaction(func(walletRepo entities.WalletRepo, txRepo entities.TransactionRepo, userRepo entities.UserRepo) error {
 		wallet, err := walletRepo.FindByUserID(ctx, userID)
 		if err != nil {
 			return err
@@ -48,7 +53,7 @@ func (s *WalletService) DebitUserbalance(ctx context.Context, userID uuid.UUID, 
 			return err
 		}
 
-		transaction := entities.NewTransaction(wallet.ID, userID, money, entities.TransactionDebit)
+		transaction := entities.NewTransaction(wallet.ID, userID, smsID, money, entities.TransactionDebit)
 		if err := txRepo.Create(ctx, transaction); err != nil {
 			return err
 		}
@@ -68,16 +73,24 @@ func (s *WalletService) DebitUserbalance(ctx context.Context, userID uuid.UUID, 
 		if err := txRepo.UpdateStatus(ctx, transaction, entities.TransactionCompleted); err != nil {
 			return err
 		}
-		msg := events.SMSDebited{
+
+		// Prepare event for publishing after transaction commits
+		eventToPublish = &events.SMSDebited{
 			UserID:        userID.String(),
 			SMSID:         transaction.SMSID.String(),
-			Amount:        *transaction.Amount.Amount(),
+			Amount:        transaction.Amount.Amount().Int64(),
 			TransactionID: transaction.ID.String(),
 			TimeStamp:     time.Now(),
 		}
-
-		return s.Publisher.PublishEvent(ctx, &msg)
+		return nil
 	})
+
+	if err == nil && eventToPublish != nil {
+		if publishErr := s.Publisher.PublishEvent(ctx, eventToPublish); publishErr != nil {
+		}
+		s.log.Info(ctx, "Published SMSDebited event", "user_id", eventToPublish.UserID, "sms_id", eventToPublish.SMSID, "amount", eventToPublish.Amount, "transaction_id", eventToPublish.TransactionID)
+	}
+	return err
 }
 
 // http handler calls this usecase
@@ -92,7 +105,7 @@ func (s *WalletService) CreditUserBalance(ctx context.Context, userID uuid.UUID,
 		if err != nil {
 			return err
 		}
-		transaction := entities.NewTransaction(wallet.ID, userID, money, entities.TransactionCredit)
+		transaction := entities.NewTransaction(wallet.ID, userID, uuid.New(), money, entities.TransactionCredit)
 		if err := txRepo.Create(ctx, transaction); err != nil {
 			return err
 		}
@@ -134,7 +147,7 @@ func (s *WalletService) RefundTransaction(ctx context.Context, txID string) erro
 			return err
 		}
 
-		refundTx := entities.NewTransaction(wallet.ID, originalTx.UserID, originalTx.Amount, entities.TransactionCredit)
+		refundTx := entities.NewTransaction(wallet.ID, originalTx.UserID, originalTx.SMSID, originalTx.Amount, entities.TransactionCredit)
 		if err := txRepo.Create(ctx, refundTx); err != nil {
 			return err
 		}
