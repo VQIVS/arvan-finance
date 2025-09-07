@@ -22,7 +22,7 @@ func NewUserRepository(db *gorm.DB) entities.UserRepo {
 
 func (r *UserRepository) GetByID(ctx context.Context, ID uuid.UUID) (*entities.User, error) {
 	var model types.User
-	if err := r.Db.WithContext(ctx).Preload("Wallet").First(&model, "id = ?", ID).Error; err != nil {
+	if err := r.Db.WithContext(ctx).First(&model, "id = ?", ID).Error; err != nil {
 		return nil, err
 	}
 	user := mapper.UserStorage2Domain(model)
@@ -31,7 +31,7 @@ func (r *UserRepository) GetByID(ctx context.Context, ID uuid.UUID) (*entities.U
 
 func (r *UserRepository) GetAll(ctx context.Context) ([]*entities.User, error) {
 	var models []types.User
-	if err := r.Db.WithContext(ctx).Preload("Wallet").Find(&models).Error; err != nil {
+	if err := r.Db.WithContext(ctx).Find(&models).Error; err != nil {
 		return nil, err
 	}
 
