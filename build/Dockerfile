@@ -1,3 +1,4 @@
+
 FROM golang:1.24-alpine as builder
 
 WORKDIR /app
@@ -21,7 +22,7 @@ WORKDIR /app
 COPY --from=builder /app/finance-api ./finance-api
 COPY --from=builder /app/finance-consumer ./finance-consumer
 
-COPY config.json ./config.json
+COPY config.yaml ./config.yaml
 
 RUN chown -R appuser:appgroup /app
 

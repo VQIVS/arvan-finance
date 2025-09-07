@@ -1,137 +1,177 @@
 definitions:
-  presenter.UserBalanceRequest:
+  dto.CreditWalletRequest:
     properties:
       amount:
-        type: number
-      user_id:
         type: integer
-    type: object
-  presenter.UserBalanceResponse:
-    properties:
-      balance:
-        type: number
       user_id:
+        type: string
+    required:
+    - amount
+    - user_id
+    type: object
+  dto.CreditWalletResponse:
+    properties:
+      user_id:
+        type: string
+    type: object
+  dto.GetAllUsersResponse:
+    properties:
+      total:
         type: integer
+      users:
+        items:
+          $ref: '#/definitions/dto.GetUserResponse'
+        type: array
     type: object
-  presenter.UserRequest:
+  dto.GetUserResponse:
     properties:
-      apikey:
-        type: string
-      balance:
-        format: float64
-        type: number
-    type: object
-  presenter.UserResponse:
-    properties:
-      apikey:
-        type: string
-      balance:
-        type: number
       id:
+        type: string
+      last_name:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      wallet_id:
+        type: string
+    type: object
+  dto.GetWalletResponse:
+    properties:
+      balance:
         type: integer
+      currency:
+        type: string
+      id:
+        type: string
+      user_id:
+        type: string
     type: object
 info:
   contact: {}
 paths:
-  /{id}:
+  /user/{user_id}:
     get:
       consumes:
       - application/json
-      description: Retrieve user details by ID
+      description: Gets user information by user ID
       parameters:
       - description: User ID
         in: path
-        name: id
+        name: user_id
         required: true
         type: string
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: User information
           schema:
-            $ref: '#/definitions/presenter.UserResponse'
+            $ref: '#/definitions/dto.GetUserResponse'
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
+            additionalProperties: true
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties: true
             type: object
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
+            additionalProperties: true
             type: object
-      summary: Get user by ID
+      summary: Get user information
       tags:
-      - users
-  /create:
+      - user
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Gets a list of all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of users
+          schema:
+            $ref: '#/definitions/dto.GetAllUsersResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all users
+      tags:
+      - user
+  /wallet:
     post:
       consumes:
       - application/json
-      description: Create a new user with an api key and initial balance
+      description: Credits a user's wallet with a specified amount
       parameters:
-      - description: User request
+      - description: Credit Wallet Request
         in: body
-        name: user
+        name: request
         required: true
         schema:
-          $ref: '#/definitions/presenter.UserRequest'
+          $ref: '#/definitions/dto.CreditWalletRequest'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Wallet credited successfully
           schema:
-            $ref: '#/definitions/presenter.UserResponse'
+            $ref: '#/definitions/dto.CreditWalletResponse'
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
+            additionalProperties: true
             type: object
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
+            additionalProperties: true
             type: object
-      summary: Create user
+      summary: Credit user wallet
       tags:
-      - users
-  /credit:
-    put:
+      - wallet
+  /wallet/user/{user_id}:
+    get:
       consumes:
       - application/json
-      description: Add amount to a user's balance
+      description: Gets a user's wallet information by user ID
       parameters:
-      - description: Balance request
-        in: body
-        name: body
+      - description: User ID
+        in: path
+        name: user_id
         required: true
-        schema:
-          $ref: '#/definitions/presenter.UserBalanceRequest'
+        type: string
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Wallet information
           schema:
-            $ref: '#/definitions/presenter.UserBalanceResponse'
+            $ref: '#/definitions/dto.GetWalletResponse'
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
+            additionalProperties: true
+            type: object
+        "404":
+          description: Wallet not found
+          schema:
+            additionalProperties: true
             type: object
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
+            additionalProperties: true
             type: object
-      summary: Credit user balance
+      summary: Get user wallet
       tags:
-      - users
+      - wallet
 swagger: "2.0"

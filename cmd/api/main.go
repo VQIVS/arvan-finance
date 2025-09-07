@@ -1,15 +1,15 @@
 package main
 
 import (
-	"billing-service/api/handler/http"
-	"billing-service/app"
-	"billing-service/config"
+	"finance/config"
+	"finance/internal/api/handlers/http"
+	"finance/internal/app"
 	"flag"
 	"log"
 	"os"
 )
 
-var configPath = flag.String("config", "config.json", "service configuration file")
+var configPath = flag.String("config", "config.yaml", "service configuration file")
 
 func main() {
 	flag.Parse()
@@ -17,16 +17,9 @@ func main() {
 	if v := os.Getenv("CONFIG_PATH"); len(v) > 0 {
 		*configPath = v
 	}
-
 	c := config.MustReadConfig(*configPath)
 
 	appContainer := app.NewMustApp(c)
-
-	defer func() {
-		if err := appContainer.Close(); err != nil {
-			log.Printf("failed to close app: %v", err)
-		}
-	}()
 
 	log.Fatal(http.Run(appContainer, c.Server))
 }

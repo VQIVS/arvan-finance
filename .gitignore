@@ -1,5 +1,2 @@
-.vscode
-.idea
-config.json
+config.yaml
 bin
-.DS_Store

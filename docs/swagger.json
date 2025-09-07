@@ -4,113 +4,9 @@
         "contact": {}
     },
     "paths": {
-        "/create": {
-            "post": {
-                "description": "Create a new user with an api key and initial balance",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "Create user",
-                "parameters": [
-                    {
-                        "description": "User request",
-                        "name": "user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/presenter.UserRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/presenter.UserResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/credit": {
-            "put": {
-                "description": "Add amount to a user's balance",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "Credit user balance",
-                "parameters": [
-                    {
-                        "description": "Balance request",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/presenter.UserBalanceRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/presenter.UserBalanceResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/{id}": {
+        "/user/{user_id}": {
             "get": {
-                "description": "Retrieve user details by ID",
+                "description": "Gets user information by user ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -118,41 +14,175 @@
                     "application/json"
                 ],
                 "tags": [
-                    "users"
+                    "user"
                 ],
-                "summary": "Get user by ID",
+                "summary": "Get user information",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "User ID",
-                        "name": "id",
+                        "name": "user_id",
                         "in": "path",
                         "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "User information",
                         "schema": {
-                            "$ref": "#/definitions/presenter.UserResponse"
+                            "$ref": "#/definitions/dto.GetUserResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/users": {
+            "get": {
+                "description": "Gets a list of all users",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Get all users",
+                "responses": {
+                    "200": {
+                        "description": "List of users",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetAllUsersResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/wallet": {
+            "post": {
+                "description": "Credits a user's wallet with a specified amount",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "wallet"
+                ],
+                "summary": "Credit user wallet",
+                "parameters": [
+                    {
+                        "description": "Credit Wallet Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreditWalletRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Wallet credited successfully",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreditWalletResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/wallet/user/{user_id}": {
+            "get": {
+                "description": "Gets a user's wallet information by user ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "wallet"
+                ],
+                "summary": "Get user wallet",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Wallet information",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetWalletResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Wallet not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -160,51 +190,77 @@
         }
     },
     "definitions": {
-        "presenter.UserBalanceRequest": {
+        "dto.CreditWalletRequest": {
             "type": "object",
+            "required": [
+                "amount",
+                "user_id"
+            ],
             "properties": {
                 "amount": {
-                    "type": "number"
+                    "type": "integer"
                 },
                 "user_id": {
-                    "type": "integer"
+                    "type": "string"
                 }
             }
         },
-        "presenter.UserBalanceResponse": {
+        "dto.CreditWalletResponse": {
             "type": "object",
             "properties": {
-                "balance": {
-                    "type": "number"
-                },
                 "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.GetAllUsersResponse": {
+            "type": "object",
+            "properties": {
+                "total": {
                     "type": "integer"
+                },
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.GetUserResponse"
+                    }
                 }
             }
         },
-        "presenter.UserRequest": {
+        "dto.GetUserResponse": {
             "type": "object",
             "properties": {
-                "apikey": {
+                "id": {
                     "type": "string"
                 },
-                "balance": {
-                    "type": "number",
-                    "format": "float64"
+                "last_name": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "wallet_id": {
+                    "type": "string"
                 }
             }
         },
-        "presenter.UserResponse": {
+        "dto.GetWalletResponse": {
             "type": "object",
             "properties": {
-                "apikey": {
-                    "type": "string"
-                },
                 "balance": {
-                    "type": "number"
+                    "type": "integer"
+                },
+                "currency": {
+                    "type": "string"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
                 }
             }
         }

@@ -1,3 +1,4 @@
+
 .PHONY: build run run-dev run-api run-consumer test clean swagger docker-build docker-run docker-stop lint lint-fix lint-detailed check install-tools security
 
 build:
