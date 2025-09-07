@@ -14,6 +14,15 @@ definitions:
       user_id:
         type: string
     type: object
+  dto.GetAllUsersResponse:
+    properties:
+      total:
+        type: integer
+      users:
+        items:
+          $ref: '#/definitions/dto.GetUserResponse'
+        type: array
+    type: object
   dto.GetUserResponse:
     properties:
       id:
@@ -75,6 +84,26 @@ paths:
             additionalProperties: true
             type: object
       summary: Get user information
+      tags:
+      - user
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Gets a list of all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of users
+          schema:
+            $ref: '#/definitions/dto.GetAllUsersResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all users
       tags:
       - user
   /wallet:

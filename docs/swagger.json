@@ -57,6 +57,36 @@
                 }
             }
         },
+        "/users": {
+            "get": {
+                "description": "Gets a list of all users",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Get all users",
+                "responses": {
+                    "200": {
+                        "description": "List of users",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetAllUsersResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/wallet": {
             "post": {
                 "description": "Credits a user's wallet with a specified amount",
@@ -180,6 +210,20 @@
             "properties": {
                 "user_id": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.GetAllUsersResponse": {
+            "type": "object",
+            "properties": {
+                "total": {
+                    "type": "integer"
+                },
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.GetUserResponse"
+                    }
                 }
             }
         },
