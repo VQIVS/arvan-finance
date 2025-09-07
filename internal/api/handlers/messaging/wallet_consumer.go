@@ -48,11 +48,19 @@ func (h *ConsumerHandler) HandleDebitWallet(ctx context.Context, message []byte)
 	}
 
 	amount := big.NewInt(msg.Amount)
-	err = h.walletService.DebitUserbalance(ctx, userID, smsID, *amount)
+
+	test, err := h.walletService.DebitUserbalance(ctx, userID, smsID, *amount)
 	if err != nil {
 		h.log.Error("Error debiting user balance:", "error", err)
 		return err
 	}
+
+	err = h.walletService.Publisher.PublishEvent(ctx, test)
+	if err != nil {
+		h.log.Error("Error publishing event:", "error", err)
+		return err
+	}
+
 	h.log.Info(ctx, "Successfully debited user", "user_id", msg.UserID, "sms_id", msg.SMSID, "amount", msg.Amount)
 	return nil
 }

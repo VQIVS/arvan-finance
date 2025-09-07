@@ -39,7 +39,7 @@ func NewWalletService(walletRepo entities.WalletRepo,
 }
 
 // consumer handler calls this usecase
-func (s *WalletService) DebitUserbalance(ctx context.Context, userID, smsID uuid.UUID, amount big.Int) error {
+func (s *WalletService) DebitUserbalance(ctx context.Context, userID, smsID uuid.UUID, amount big.Int) (*events.SMSDebited, error) {
 	var eventToPublish *events.SMSDebited
 
 	err := s.withTransaction(func(walletRepo entities.WalletRepo, txRepo entities.TransactionRepo, userRepo entities.UserRepo) error {
@@ -84,13 +84,12 @@ func (s *WalletService) DebitUserbalance(ctx context.Context, userID, smsID uuid
 		}
 		return nil
 	})
-
-	if err == nil && eventToPublish != nil {
-		if publishErr := s.Publisher.PublishEvent(ctx, eventToPublish); publishErr != nil {
-		}
-		s.log.Info(ctx, "Published SMSDebited event", "user_id", eventToPublish.UserID, "sms_id", eventToPublish.SMSID, "amount", eventToPublish.Amount, "transaction_id", eventToPublish.TransactionID)
+	if err != nil {
+		return nil, err
 	}
-	return err
+
+	return eventToPublish, nil
+
 }
 
 // http handler calls this usecase

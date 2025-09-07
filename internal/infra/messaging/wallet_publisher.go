@@ -24,7 +24,8 @@ func (p *WalletPublisher) PublishEvent(ctx context.Context, event events.SMSEven
 		ctx,
 		"Publishing event",
 		"event_type", event.EventType(),
-		"aggregate_id", event.AggregateID())
+		"aggregate_id", event.AggregateID(),
+	)
 
-	return p.publisher.Publish(rabbit.Exchange, rabbit.SMSBilledRouting, event)
+	return p.publisher.Publish(rabbit.SMSBilledRouting, rabbit.Exchange, event)
 }
