@@ -4,19 +4,18 @@ import (
 	"finance/internal/domain/entities"
 	"finance/internal/domain/valueobjects"
 	"finance/internal/infra/storage/types"
-	"math/big"
 )
 
 // TODO: fix BASE
 func moneyDomain2Storage(money valueobjects.Money) types.Money {
 	return types.Money{
-		Amount:   big.NewInt(money.Amount().Int64()),
+		Amount:   types.NewBigInt(money.Amount()),
 		Currency: money.Currency(),
 	}
 }
 
 func moneyStorage2Domain(money types.Money) (valueobjects.Money, error) {
-	m, err := valueobjects.NewMoney(big.NewInt(money.Amount.Int64()), money.Currency)
+	m, err := valueobjects.NewMoney(money.Amount.Int, money.Currency)
 	if err != nil {
 		return valueobjects.Money{}, err
 	}
@@ -30,8 +29,8 @@ func TxStorage2Domain(tx types.Transaction) (*entities.Transaction, error) {
 	}
 	return &entities.Transaction{
 		ID:        tx.ID,
-		WalletID:  tx.Wallet.ID,
-		UserID:    tx.User.ID,
+		WalletID:  tx.WalletID,
+		UserID:    tx.UserID,
 		Amount:    amount,
 		Type:      entities.TransactionType(tx.Type),
 		Status:    entities.TransactionStatus(tx.Status),

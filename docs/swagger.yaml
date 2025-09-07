@@ -1,0 +1,47 @@
+definitions:
+  dto.CreditWalletRequest:
+    properties:
+      amount:
+        type: integer
+      user_id:
+        type: string
+    required:
+    - amount
+    - user_id
+    type: object
+info:
+  contact: {}
+paths:
+  /wallet:
+    post:
+      consumes:
+      - application/json
+      description: Credits a user's wallet with a specified amount
+      parameters:
+      - description: Credit Wallet Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreditWalletRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Credit user wallet
+      tags:
+      - wallet
+swagger: "2.0"

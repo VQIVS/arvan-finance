@@ -1,24 +1,16 @@
 server:
   host: "localhost"
-  port: 8080
+  port: 8081
 
 
 database:
   host: "localhost"
-  port: 5433
+  port: 5432
   username: "postgres"
   password: "postgres"
-  database: "sms"
+  database: "finance"
 
 rabbitmq:
   uri: "amqp://guest:guest@localhost:5672/"
   queues:
-    - name: "sms_debit_queue"
-      exchange: "amq.topic"
-      routing: "sms.debit.balance"
-    - name: "sms_refund_queue"
-      exchange: "amq.topic"
-      routing: "sms.refund.balance"
-    - name: "sms_delivered_queue"
-      exchange: "amq.topic"
-      routing: "sms.delivered"
+   

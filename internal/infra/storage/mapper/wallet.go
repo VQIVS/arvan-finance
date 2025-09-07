@@ -7,7 +7,7 @@ import (
 )
 
 func WalletStorage2Domain(w types.Wallet) (*entities.Wallet, error) {
-	money, err := valueobjects.NewMoney(&w.Balance, w.Currency)
+	money, err := valueobjects.NewMoney(w.Balance.Int, w.Currency)
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +29,7 @@ func WalletDomain2Storage(w *entities.Wallet) types.Wallet {
 			UpdatedAt: w.UpdatedAt,
 		},
 		UserID:   w.UserID,
-		Balance:  *w.Balance.Amount(),
+		Balance:  types.NewBigInt(w.Balance.Amount()),
 		Currency: w.Balance.Currency(),
 	}
 }
