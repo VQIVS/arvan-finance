@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"finance/config"
 	"finance/internal/usecase"
 	"finance/pkg/rabbit"
@@ -12,5 +13,5 @@ type App interface {
 	Config() config.Config
 	DB() *gorm.DB
 	RabbitConn() *rabbit.RabbitConn
-	WalletService() *usecase.WalletService
+	WalletService(ctx context.Context) *usecase.WalletService
 }

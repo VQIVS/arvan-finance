@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"finance/config"
 	"finance/internal/infra/messaging"
 	"finance/internal/infra/storage"
@@ -31,7 +32,7 @@ func (a *app) RabbitConn() *rabbit.RabbitConn {
 	return a.rabbitConn
 }
 
-func (a *app) WalletService() *usecase.WalletService {
+func (a *app) WalletService(ctx context.Context) *usecase.WalletService {
 	return a.walletService
 }
 
