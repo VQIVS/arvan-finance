@@ -129,6 +129,18 @@ func (s *WalletService) CreditUserBalance(ctx context.Context, userID uuid.UUID,
 	})
 }
 
+func (s *WalletService) GetWalletByUserID(ctx context.Context, userID uuid.UUID) (*entities.Wallet, error) {
+	return s.WalletRepo.FindByUserID(ctx, userID)
+}
+
+func (s *WalletService) GetUserByID(ctx context.Context, userID uuid.UUID) (*entities.User, error) {
+	return s.UserRepo.GetByID(ctx, userID)
+}
+
+func (s *WalletService) GetAllUsers(ctx context.Context) ([]*entities.User, error) {
+	return s.UserRepo.GetAll(ctx)
+}
+
 // this usecase executes in a subsciber handler
 func (s *WalletService) RefundTransaction(ctx context.Context, txID string) error {
 	return s.withTransaction(func(walletRepo entities.WalletRepo, txRepo entities.TransactionRepo, userRepo entities.UserRepo) error {

@@ -9,9 +9,74 @@ definitions:
     - amount
     - user_id
     type: object
+  dto.CreditWalletResponse:
+    properties:
+      user_id:
+        type: string
+    type: object
+  dto.GetUserResponse:
+    properties:
+      id:
+        type: string
+      last_name:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      wallet_id:
+        type: string
+    type: object
+  dto.GetWalletResponse:
+    properties:
+      balance:
+        type: integer
+      currency:
+        type: string
+      id:
+        type: string
+      user_id:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
+  /user/{user_id}:
+    get:
+      consumes:
+      - application/json
+      description: Gets user information by user ID
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User information
+          schema:
+            $ref: '#/definitions/dto.GetUserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get user information
+      tags:
+      - user
   /wallet:
     post:
       consumes:
@@ -28,9 +93,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Wallet credited successfully
           schema:
-            type: string
+            $ref: '#/definitions/dto.CreditWalletResponse'
         "400":
           description: Bad Request
           schema:
@@ -42,6 +107,42 @@ paths:
             additionalProperties: true
             type: object
       summary: Credit user wallet
+      tags:
+      - wallet
+  /wallet/user/{user_id}:
+    get:
+      consumes:
+      - application/json
+      description: Gets a user's wallet information by user ID
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Wallet information
+          schema:
+            $ref: '#/definitions/dto.GetWalletResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Wallet not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get user wallet
       tags:
       - wallet
 swagger: "2.0"

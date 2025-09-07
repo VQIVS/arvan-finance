@@ -33,9 +33,18 @@ func registerSMSRoutes(appContainer app.App, router fiber.Router) {
 
 	v1 := router.Group("/api/v1")
 
-	// SMS routes
+	// Wallet routes
 	wallet := v1.Group("/wallet")
 	wallet.Post("/", setTraceID(), walletHandler.Credit)
+	wallet.Get("/user/:user_id", setTraceID(), walletHandler.GetWalletByUserID)
+
+	// User routes
+	user := v1.Group("/user")
+	user.Get("/:user_id", setTraceID(), walletHandler.GetUser)
+
+	// Users routes (plural for getting all users)
+	users := v1.Group("/users")
+	users.Get("/", setTraceID(), walletHandler.GetAllUsers)
 }
 
 func customErrorHandler(c *fiber.Ctx, err error) error {

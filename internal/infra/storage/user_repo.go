@@ -29,6 +29,19 @@ func (r *UserRepository) GetByID(ctx context.Context, ID uuid.UUID) (*entities.U
 	return user, nil
 }
 
+func (r *UserRepository) GetAll(ctx context.Context) ([]*entities.User, error) {
+	var models []types.User
+	if err := r.Db.WithContext(ctx).Preload("Wallet").Find(&models).Error; err != nil {
+		return nil, err
+	}
+
+	users := make([]*entities.User, len(models))
+	for i, model := range models {
+		users[i] = mapper.UserStorage2Domain(model)
+	}
+	return users, nil
+}
+
 func (r *UserRepository) WithTx(tx *gorm.DB) entities.UserRepo {
 	return &UserRepository{
 		Db: tx,

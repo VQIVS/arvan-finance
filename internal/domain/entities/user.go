@@ -10,6 +10,7 @@ import (
 
 type UserRepo interface {
 	GetByID(ctx context.Context, ID uuid.UUID) (*User, error)
+	GetAll(ctx context.Context) ([]*User, error)
 	WithTx(tx *gorm.DB) UserRepo
 }
 
