@@ -23,13 +23,13 @@ type WalletService struct {
 
 func NewWalletService(walletRepo entities.WalletRepo,
 	userRepo entities.UserRepo,
-	txRepo entities.TransactionRepo,
+	transactionRepo entities.TransactionRepo,
 	txManager storage.TransactionManager,
 	publisher events.Publisher) *WalletService {
 	return &WalletService{
 		WalletRepo:      walletRepo,
 		UserRepo:        userRepo,
-		TransactionRepo: txRepo,
+		TransactionRepo: transactionRepo,
 		TxManager:       txManager,
 		Publisher:       publisher,
 	}

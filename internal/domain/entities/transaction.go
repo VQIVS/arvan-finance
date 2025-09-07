@@ -34,8 +34,6 @@ type TransactionRepo interface {
 	FindByID(ctx context.Context, id string) (*Transaction, error)
 	UpdateStatus(ctx context.Context, tx *Transaction, status TransactionStatus) error
 	WithTx(tx *gorm.DB) TransactionRepo
-
-	//TODO: check the propper way to handle transactions in gorm
 }
 type Transaction struct {
 	ID        uuid.UUID          `json:"id"`
