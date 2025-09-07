@@ -13,4 +13,11 @@ database:
 rabbitmq:
   uri: "amqp://guest:guest@localhost:5672/"
   queues:
-   
+  # These queues are the queues that finance service should listen to
+    - name: "finance_billing.debit.request"
+      exchange: "amq.topic" 
+      routing: "billing.debit.request"
+
+    - name: "finance_billing.refund.request"
+      exchange: "amq.topic"
+      routing: "billing.refund.request"
