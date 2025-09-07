@@ -26,7 +26,7 @@ func NewWalletHandler(walletService *usecase.WalletService) *WalletHandler {
 // @Accept       json
 // @Produce      json
 // @Param        request  body      dto.CreditWalletRequest  true  "Credit Wallet Request"
-// @Success      200      {string}  string                   "OK"
+// @Success      200      {object}  dto.CreditWalletResponse "Wallet credited successfully"
 // @Failure      400      {object}  map[string]interface{}   "Bad Request"
 // @Failure      500      {object}  map[string]interface{}   "Internal Server Error"
 // @Router       /wallet [post]
@@ -47,5 +47,11 @@ func (h *WalletHandler) Credit(c *fiber.Ctx) error {
 	if err := h.walletService.CreditUserBalance(ctx, userID, *amount); err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
-	return c.SendStatus(fiber.StatusOK)
+	return c.JSON(dto.BaseResponse{
+		Success: true,
+		Message: "Wallet credited successfully",
+		Data: dto.CreditWalletResponse{
+			UserID: userID.String(),
+		},
+	})
 }
